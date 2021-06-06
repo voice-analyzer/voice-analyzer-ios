@@ -10,9 +10,13 @@
 		C881ABFD266BFF7C006F83D4 /* VoiceAnalyzerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */; };
 		C881ABFF266BFF7C006F83D4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFE266BFF7C006F83D4 /* ContentView.swift */; };
 		C881AC01266BFF7E006F83D4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C881AC00266BFF7E006F83D4 /* Images.xcassets */; };
+		E9B9E3CBFD19816FDE13CDCE /* Pods_VoiceAnalyzer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D501EB47E636FA8CDFB83C1 /* Pods_VoiceAnalyzer.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1D501EB47E636FA8CDFB83C1 /* Pods_VoiceAnalyzer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_VoiceAnalyzer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DB5491B3C3C7451EB7AC00C /* Pods-VoiceAnalyzer.app store release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VoiceAnalyzer.app store release.xcconfig"; path = "Target Support Files/Pods-VoiceAnalyzer/Pods-VoiceAnalyzer.app store release.xcconfig"; sourceTree = "<group>"; };
+		43B928FDA7E004FEDE0DF263 /* Pods-VoiceAnalyzer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VoiceAnalyzer.debug.xcconfig"; path = "Target Support Files/Pods-VoiceAnalyzer/Pods-VoiceAnalyzer.debug.xcconfig"; sourceTree = "<group>"; };
 		C881ABF9266BFF7C006F83D4 /* VoiceAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAnalyzerApp.swift; sourceTree = "<group>"; };
 		C881ABFE266BFF7C006F83D4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -25,17 +29,29 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9B9E3CBFD19816FDE13CDCE /* Pods_VoiceAnalyzer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C67DA38172209A7BDEE0971E /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				43B928FDA7E004FEDE0DF263 /* Pods-VoiceAnalyzer.debug.xcconfig */,
+				2DB5491B3C3C7451EB7AC00C /* Pods-VoiceAnalyzer.app store release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		C881ABF0266BFF7C006F83D4 = {
 			isa = PBXGroup;
 			children = (
 				C881ABFB266BFF7C006F83D4 /* VoiceAnalyzer */,
 				C881ABFA266BFF7C006F83D4 /* Products */,
+				C67DA38172209A7BDEE0971E /* Pods */,
+				FEB935C82801FE7747CE5DBA /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -82,6 +98,14 @@
 			path = UI;
 			sourceTree = "<group>";
 		};
+		FEB935C82801FE7747CE5DBA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1D501EB47E636FA8CDFB83C1 /* Pods_VoiceAnalyzer.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -89,9 +113,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C881AC1E266BFF7E006F83D4 /* Build configuration list for PBXNativeTarget "VoiceAnalyzer" */;
 			buildPhases = (
+				D45CDEC581F24DA4E639400A /* [CP] Check Pods Manifest.lock */,
 				C881ABF5266BFF7C006F83D4 /* Sources */,
 				C881ABF6266BFF7C006F83D4 /* Frameworks */,
 				C881ABF7266BFF7C006F83D4 /* Resources */,
+				49B55EAF9458A01415F05C89 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -145,6 +171,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		49B55EAF9458A01415F05C89 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-VoiceAnalyzer/Pods-VoiceAnalyzer-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-VoiceAnalyzer/Pods-VoiceAnalyzer-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-VoiceAnalyzer/Pods-VoiceAnalyzer-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D45CDEC581F24DA4E639400A /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-VoiceAnalyzer-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C881ABF5266BFF7C006F83D4 /* Sources */ = {
@@ -302,6 +370,7 @@
 		};
 		C881AC1F266BFF7E006F83D4 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 43B928FDA7E004FEDE0DF263 /* Pods-VoiceAnalyzer.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
@@ -335,6 +404,7 @@
 		};
 		C881AC20266BFF7E006F83D4 /* App Store Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2DB5491B3C3C7451EB7AC00C /* Pods-VoiceAnalyzer.app store release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
