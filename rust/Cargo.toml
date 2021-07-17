@@ -1,0 +1,13 @@
+[package]
+name    = "voice-analyzer-rust"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+name = "voice_analyzer_rust"
+crate_type = ["staticlib"]
+
+[dependencies]
+
+[build-dependencies]
+cbindgen = "0.19"

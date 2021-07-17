@@ -1,0 +1,4 @@
+module libvoice_analyzer_rust {
+  header "voice-analyzer-rust.h"
+  link "voice_analyzer_rust"
+}

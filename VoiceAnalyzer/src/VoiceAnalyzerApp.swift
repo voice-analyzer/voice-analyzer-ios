@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import VoiceAnalyzerRust
 
 @main
 struct VoiceAnalyzerApp: App {
@@ -12,7 +13,7 @@ struct VoiceAnalyzerApp: App {
                 Button(action: {
                     barEntries.append(BarChartDataEntry(x: Double(barEntries.count), y: Double(barEntries.count)))
                 }) {
-                    Text("Add Bar")
+                    Text(VoiceAnalyzerRust.test())
                         .padding(.all, 5)
                         .border(Color.black)
                 }
