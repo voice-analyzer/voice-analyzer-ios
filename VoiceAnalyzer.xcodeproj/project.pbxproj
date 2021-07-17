@@ -8,8 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		C881ABFD266BFF7C006F83D4 /* VoiceAnalyzerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */; };
-		C881ABFF266BFF7C006F83D4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFE266BFF7C006F83D4 /* ContentView.swift */; };
+		C881ABFF266BFF7C006F83D4 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFE266BFF7C006F83D4 /* ChartView.swift */; };
 		C881AC01266BFF7E006F83D4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C881AC00266BFF7E006F83D4 /* Images.xcassets */; };
+		C8D986BD266DAEAF00228FB3 /* BarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D986BC266DAEAF00228FB3 /* BarChart.swift */; };
 		E9B9E3CBFD19816FDE13CDCE /* Pods_VoiceAnalyzer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D501EB47E636FA8CDFB83C1 /* Pods_VoiceAnalyzer.framework */; };
 /* End PBXBuildFile section */
 
@@ -19,9 +20,10 @@
 		43B928FDA7E004FEDE0DF263 /* Pods-VoiceAnalyzer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VoiceAnalyzer.debug.xcconfig"; path = "Target Support Files/Pods-VoiceAnalyzer/Pods-VoiceAnalyzer.debug.xcconfig"; sourceTree = "<group>"; };
 		C881ABF9266BFF7C006F83D4 /* VoiceAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAnalyzerApp.swift; sourceTree = "<group>"; };
-		C881ABFE266BFF7C006F83D4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		C881ABFE266BFF7C006F83D4 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
 		C881AC00266BFF7E006F83D4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		C881AC05266BFF7E006F83D4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C8D986BC266DAEAF00228FB3 /* BarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarChart.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,7 +87,8 @@
 		C8D986B9266CD0DE00228FB3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C881ABFE266BFF7C006F83D4 /* ContentView.swift */,
+				C8D986BB266DAE9300228FB3 /* Charts */,
+				C881ABFE266BFF7C006F83D4 /* ChartView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -96,6 +99,14 @@
 				C8D986B9266CD0DE00228FB3 /* Views */,
 			);
 			path = UI;
+			sourceTree = "<group>";
+		};
+		C8D986BB266DAE9300228FB3 /* Charts */ = {
+			isa = PBXGroup;
+			children = (
+				C8D986BC266DAEAF00228FB3 /* BarChart.swift */,
+			);
+			path = Charts;
 			sourceTree = "<group>";
 		};
 		FEB935C82801FE7747CE5DBA /* Frameworks */ = {
@@ -219,7 +230,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C881ABFF266BFF7C006F83D4 /* ContentView.swift in Sources */,
+				C881ABFF266BFF7C006F83D4 /* ChartView.swift in Sources */,
+				C8D986BD266DAEAF00228FB3 /* BarChart.swift in Sources */,
 				C881ABFD266BFF7C006F83D4 /* VoiceAnalyzerApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
