@@ -8,6 +8,7 @@ name = "voice_analyzer_rust"
 crate_type = ["staticlib"]
 
 [dependencies]
+itertools = "0.10"
 
 [build-dependencies]
 cbindgen = "0.19"

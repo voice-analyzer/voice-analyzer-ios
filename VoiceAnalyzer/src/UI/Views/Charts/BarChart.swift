@@ -4,7 +4,7 @@ import Charts
 struct BarChart: UIViewRepresentable {
     typealias UIViewType = BarChartView
 
-    @Binding var data: [BarChartDataEntry]
+    var data: [BarChartDataEntry]
 
     func makeUIView(context: Context) -> UIViewType {
         let chart = BarChartView()

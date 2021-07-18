@@ -1,19 +1,26 @@
+import os
 import SwiftUI
 import Charts
 import VoiceAnalyzerRust
 
 @main
 struct VoiceAnalyzerApp: App {
-    @State var barEntries: [BarChartDataEntry] = []
+    private let env = Environment()
+
+    @StateObject private var voiceRecording: VoiceRecordingModel = VoiceRecordingModel()
 
     var body: some Scene {
         WindowGroup {
             VStack {
-                ChartView(barEntries: $barEntries)
+                ChartView(pitches: $voiceRecording.pitches)
                 Button(action: {
-                    barEntries.append(BarChartDataEntry(x: Double(barEntries.count), y: Double(barEntries.count)))
+                    do {
+                        try voiceRecording.toggleRecording(env: env)
+                    } catch {
+                        os_log("error starting recording: %@", error.localizedDescription)
+                    }
                 }) {
-                    Text(VoiceAnalyzerRust.test())
+                    Text("Record/Stop")
                         .padding(.all, 5)
                         .border(Color.black)
                 }
