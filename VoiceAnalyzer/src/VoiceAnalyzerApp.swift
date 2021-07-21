@@ -8,6 +8,7 @@ struct VoiceAnalyzerApp: App {
     private let env = Environment()
 
     @StateObject private var voiceRecording: VoiceRecordingModel = VoiceRecordingModel()
+    @State private var isRecording = false
 
     var body: some Scene {
         WindowGroup {
@@ -16,13 +17,22 @@ struct VoiceAnalyzerApp: App {
                 Button(action: {
                     do {
                         try voiceRecording.toggleRecording(env: env)
+                        isRecording = voiceRecording.isRecording
                     } catch {
-                        os_log("error starting recording: %@", error.localizedDescription)
+                        os_log("error toggling recording: %@", error.localizedDescription)
                     }
                 }) {
-                    Text("Record/Stop")
+                    Text(isRecording ? "Stop" : "Record")
                         .padding(.all, 5)
                         .border(Color.black)
+                }
+            }
+            .onAppear {
+                do {
+                    try voiceRecording.startRecording(env: env)
+                    isRecording = voiceRecording.isRecording
+                } catch {
+                    os_log("error starting recording: %@", error.localizedDescription)
                 }
             }
         }

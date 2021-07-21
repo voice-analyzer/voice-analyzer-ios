@@ -14,6 +14,10 @@ public class VoiceRecordingModel: ObservableObject {
 
     private var recordingState: RecordingState?
 
+    public var isRecording: Bool {
+        get { if let _ = recordingState { return true } else { return false } }
+    }
+
     public func toggleRecording(env: Environment) throws {
         if let _ = self.recordingState {
             stopRecording(env: env)
