@@ -6,6 +6,6 @@ struct ChartView: View {
     @Binding var pitches: [Pitch]
 
     var body: some View {
-        BarChart(data: pitches.enumerated().map { BarChartDataEntry(x: Double($0), y: Double($1.value)) })
+        PitchChart(pitches: pitches)
     }
 }
