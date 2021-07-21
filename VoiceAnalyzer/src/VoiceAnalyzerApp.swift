@@ -14,17 +14,27 @@ struct VoiceAnalyzerApp: App {
         WindowGroup {
             VStack {
                 ChartView(pitches: $voiceRecording.pitches)
-                Button(action: {
-                    do {
-                        try voiceRecording.toggleRecording(env: env)
-                        isRecording = voiceRecording.isRecording
-                    } catch {
-                        os_log("error toggling recording: %@", error.localizedDescription)
+                ZStack {
+                    Button(action: {
+                        do {
+                            try voiceRecording.toggleRecording(env: env)
+                            isRecording = voiceRecording.isRecording
+                        } catch {
+                            os_log("error toggling recording: %@", error.localizedDescription)
+                        }
+                    }) {
+                        Text(isRecording ? "Stop" : "Record")
+                            .padding(.all, 5)
                     }
-                }) {
-                    Text(isRecording ? "Stop" : "Record")
-                        .padding(.all, 5)
-                        .border(Color.black)
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            voiceRecording.pitches = []
+                        }) {
+                            Text("Clear")
+                                .padding(.all, 5)
+                        }
+                    }
                 }
             }
             .onAppear {
