@@ -2,7 +2,9 @@ PODS:
   - Charts (3.6.0):
     - Charts/Core (= 3.6.0)
   - Charts/Core (3.6.0)
-  - VoiceAnalyzerRust (0.1.0)
+  - libsamplerate (0.1.9)
+  - VoiceAnalyzerRust (0.1.0):
+    - libsamplerate (~> 0.1)
 
 DEPENDENCIES:
   - Charts (~> 3.6)
@@ -11,6 +13,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Charts
+    - libsamplerate
 
 EXTERNAL SOURCES:
   VoiceAnalyzerRust:
@@ -18,7 +21,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Charts: b1e3a1f5a1c9ba5394438ca3b91bd8c9076310af
-  VoiceAnalyzerRust: 467b44ae81062dda418cca5800309107c4e6b5b9
+  libsamplerate: 5fdfc4b8ed8825d3047731642f02fda314efdab5
+  VoiceAnalyzerRust: 9fd7b86adcedf61d37cae415ce8f0131e1ba9af3
 
 PODFILE CHECKSUM: a33d8855277dd01508225cab1706ed046363e6c9
 

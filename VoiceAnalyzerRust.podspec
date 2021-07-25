@@ -16,6 +16,8 @@ Pod::Spec.new do |s|
     'VoiceAnalyzerRust/Sources/libvoice_analyzer_rust',
   ]
 
+  s.dependency 'libsamplerate', '~> 0.1'
+
   s.pod_target_xcconfig = {
       'HEADER_SEARCH_PATHS' => '$(PODS_TARGET_SRCROOT)/VoiceAnalyzerRust/Sources/libvoice_analyzer_rust',
       'SWIFT_INCLUDE_PATHS' => '$(HEADER_SEARCH_PATHS)',

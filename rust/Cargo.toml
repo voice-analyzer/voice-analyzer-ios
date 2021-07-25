@@ -8,7 +8,16 @@ name = "voice_analyzer_rust"
 crate_type = ["staticlib"]
 
 [dependencies]
+derive_more = "0.99"
 itertools = "0.10"
+irapt = { git = "https://github.com/voice-analyzer/irapt-rs.git" }
+log = "0.4"
+num = "0.4"
+rustfft = "6.0"
+
+[dev-dependencies]
+csv = "1.1"
 
 [build-dependencies]
+bindgen = "0.59"
 cbindgen = "0.19"

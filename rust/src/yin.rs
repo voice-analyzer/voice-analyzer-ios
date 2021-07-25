@@ -9,7 +9,7 @@ pub fn pitch(samples: &[f32], sample_rate: u32, threshold: f32) -> Option<Pitch>
     let differences = difference(samples);
     let normalized = cumulative_mean_normalized_difference(differences);
     absolute_threshold(normalized, threshold).map(|(selected_index, (prev_value, selected_value, next_value))| Pitch {
-        value: sample_rate as f32 / parabolic_interpolation(selected_index, prev_value, selected_value, next_value),
+        value:      sample_rate as f32 / parabolic_interpolation(selected_index, prev_value, selected_value, next_value),
         confidence: 1.0 - selected_value,
     })
 }

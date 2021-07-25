@@ -7,6 +7,9 @@ public class VoiceRecordingModel: ObservableObject {
 
     @Published var pitches: [Pitch] = []
 
+    var pitchAnalyzer: IRAPT? = nil;
+    var sampleRate: Float64? = nil;
+
     struct RecordingState {
         let activity: AudioSession.Activity
         let engine: AVAudioEngine
@@ -58,11 +61,21 @@ public class VoiceRecordingModel: ObservableObject {
     }
 
     func processData(buffer: AVAudioPCMBuffer, time: AVAudioTime) {
-        let pitch = VoiceAnalyzerRust.yin(
+        if buffer.format.sampleRate != self.sampleRate {
+            if let oldSampleRate = self.sampleRate {
+                os_log("sample rate changed from %f to %f", oldSampleRate, buffer.format.sampleRate)
+            } else {
+                os_log("starting IRAPT with sample rate %f", buffer.format.sampleRate)
+            }
+            self.pitchAnalyzer = nil
+            self.sampleRate = buffer.format.sampleRate
+        }
+        let pitchAnalyzer = self.pitchAnalyzer ?? IRAPT(sampleRate: buffer.format.sampleRate)
+        self.pitchAnalyzer = pitchAnalyzer
+
+        let pitch = pitchAnalyzer.process(
             samples: buffer.floatChannelData!.pointee,
-            samplesLen: UInt(buffer.frameLength),
-            sampleRate: UInt32(buffer.format.sampleRate),
-            threshold: Self.THRESHOLD)
+            samplesLen: UInt(buffer.frameLength))
         if pitch.confidence > Self.THRESHOLD {
             DispatchQueue.main.async {
                 self.pitches.append(pitch)
