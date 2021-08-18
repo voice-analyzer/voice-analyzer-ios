@@ -53,6 +53,10 @@ RUST_UNIVERSAL_LIBRARY = target/universal/$(RUST_CONFIGURATION)/lib$(RUST_LIBRAR
 NIL :=
 SP := $(NIL) $(NIL)
 COMMA := ,
+define NL
+
+
+endef
 
 #
 # phony targets
@@ -67,6 +71,7 @@ help:
 	@echo "  submodules           -- update submodules"
 	@echo "  rust-build           -- build rust $(RUST_CONFIGURATION) libraries for $(subst $(SP),$(COMMA),$(RUST_TARGETS))"
 	@echo "  rust-build-universal -- build rust universal $(RUST_CONFIGURATION) library for $(subst $(SP),$(COMMA),$(RUST_TARGETS))"
+	@echo "  rust-clean           -- clean rust build directory for $(subst $(SP),$(COMMA),$(RUST_TARGETS))"
 
 .PHONY: submodules
 submodules:
@@ -79,6 +84,13 @@ rust-build-universal: $(RUST_UNIVERSAL_LIBRARY)
 
 .PHONY: rust-build
 rust-build: $(RUST_LIBRARIES)
+
+.PHONY: rust-clean
+rust-clean:
+	$(CARGO) clean -p voice-analyzer-rust --release
+	$(foreach target,$(RUST_TARGETS), \
+		$(CARGO) clean -p voice-analyzer-rust --release --target $(target) $(NL) \
+	)
 
 #
 # utility targets
