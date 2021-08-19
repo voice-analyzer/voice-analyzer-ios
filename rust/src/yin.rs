@@ -1,67 +1,69 @@
 use std::iter;
 
-use itertools::{FoldWhile, Itertools, zip};
+use itertools::{zip, Itertools};
 
+use crate::util::iter::last_two;
 use crate::Pitch;
 
-pub(crate) fn pitch(buffer: &mut Vec<f32>, samples: &[f32], sample_rate: u32, threshold: f32) -> Option<Pitch> {
-    difference(buffer, samples);
-    cumulative_mean_normalized_difference(buffer);
-    absolute_threshold(buffer, threshold).map(|tau_estimate| {
-        Pitch {
-            value: sample_rate as f32 / parabolic_interpolation(buffer, tau_estimate),
-            confidence: 1.0 - buffer[tau_estimate],
-        }
+pub fn pitch(samples: &[f32], sample_rate: u32, threshold: f32) -> Option<Pitch> {
+    let differences = difference(samples);
+    let normalized = cumulative_mean_normalized_difference(differences);
+    absolute_threshold(normalized, threshold).map(|(selected_index, (prev_value, selected_value, next_value))| Pitch {
+        value: sample_rate as f32 / parabolic_interpolation(selected_index, prev_value, selected_value, next_value),
+        confidence: 1.0 - selected_value,
     })
 }
 
-fn difference(buffer: &mut Vec<f32>, samples: &[f32]) {
-    let tau_values = (0..samples.len() / 2).into_iter().map(|tau| {
-        let delta = zip(samples, &samples[tau..]).map(|(a, b)| a - b);
+fn difference(samples: &[f32]) -> impl Iterator<Item = f32> + '_ {
+    let differences = (0..samples.len() / 2).into_iter().map(move |lag| {
+        let delta = zip(samples, &samples[lag..]).map(|(a, b)| a - b);
         let delta_squared = delta.map(|delta| delta * delta);
         delta_squared.sum()
     });
-    let tau_values = iter::once(0.0).chain(tau_values.skip(1));
-    buffer.clear();
-    buffer.extend(tau_values);
+    iter::once(0.0).chain(differences.skip(1))
 }
 
-fn cumulative_mean_normalized_difference(buffer: &mut [f32]) {
-    let mut tau_iter = buffer.iter_mut().enumerate();
+fn cumulative_mean_normalized_difference<I: Iterator<Item = f32>>(differences: I) -> impl Iterator<Item = f32> {
+    let mut differences = differences.enumerate();
     let mut running_sum = 0.0;
-    tau_iter.next().map(|(_tau, tau_value)| *tau_value = 1.0);
-    for (tau, tau_value) in tau_iter {
-        running_sum += *tau_value;
-        *tau_value *= tau as f32 / running_sum;
-    }
-}
-
-fn absolute_threshold(buffer: &[f32], threshold: f32) -> Option<usize> {
-    let mut tau_below_threshold = buffer.iter().enumerate().skip(2).skip_while(|(_, tau_value)| **tau_value > threshold);
-    let first_tau_below_threshold = tau_below_threshold.next();
-    let selected_tau = first_tau_below_threshold.map(|first| {
-        tau_below_threshold.fold_while(first, |(tau, tau_value), (next_tau, next_tau_value)| {
-            if next_tau_value < tau_value {
-                FoldWhile::Continue((next_tau, next_tau_value))
-            } else {
-                FoldWhile::Done((tau, tau_value))
-            }
-        }).into_inner()
+    let first = differences.next().map(|_| 1.0);
+    let normalized_differences = differences.map(move |(index, difference)| {
+        running_sum += difference;
+        difference * index as f32 / running_sum
     });
-    selected_tau.map(|(tau, _tau_value)| tau)
+    first.into_iter().chain(normalized_differences)
 }
 
-fn parabolic_interpolation(buffer: &[f32], tau_estimate: usize) -> f32 {
-    let tau_estimate_value = buffer[tau_estimate];
+fn absolute_threshold<I: Iterator<Item = f32>>(normalized: I, threshold: f32) -> Option<(usize, (Option<f32>, f32, Option<f32>))> {
+    let mut below_threshold = normalized.enumerate().skip(2).skip_while(|(_, value)| *value > threshold);
+    let first_below_threshold = below_threshold.next();
+    first_below_threshold.map(|(mut selected_index, mut selected_value)| {
+        let mut below_threshold = below_threshold.peekable();
+        let until_selected = below_threshold.peeking_take_while(|(index, value)| {
+            if *value < selected_value {
+                selected_value = *value;
+                selected_index = *index;
+                true
+            } else {
+                false
+            }
+        });
+        let prev_value = last_two(until_selected).0.map(|(_, value)| value);
+        let next_value = below_threshold.next().map(|(_, value)| value);
+        (selected_index, (prev_value, selected_value, next_value))
+    })
+}
 
-    let prev = tau_estimate.checked_sub(1).and_then(|prev_index| buffer.get(prev_index).map(|prev_value| (prev_index, prev_value)));
-    let next = tau_estimate.checked_add(1).and_then(|next_index| buffer.get(next_index).map(|next_value| (next_index, next_value)));
+fn parabolic_interpolation(selected_index: usize, prev_value: Option<f32>, selected_value: f32, next_value: Option<f32>) -> f32 {
+    let prev = prev_value.map(|prev_value| (selected_index - 1, prev_value));
+    let next = next_value.map(|next_value| (selected_index + 1, next_value));
     match (prev, next) {
-        (Some((_, prev_value)), Some((_, next_value))) =>
-            tau_estimate as f32 + (next_value - prev_value) / (2.0 * (2.0 * tau_estimate_value - next_value - prev_value)),
-        (Some((other_index, other_value)), None) | (None, Some((other_index, other_value)))
-            if *other_value > tau_estimate_value =>
-            other_index as f32,
-        _ => tau_estimate as f32,
+        (Some((_, prev_value)), Some((_, next_value))) => {
+            selected_index as f32 + (next_value - prev_value) / (2.0 * (2.0 * selected_value - next_value - prev_value))
+        }
+        (Some((other_index, other_value)), None) | (None, Some((other_index, other_value))) if other_value > selected_value => {
+            other_index as f32
+        }
+        _ => selected_index as f32,
     }
 }
