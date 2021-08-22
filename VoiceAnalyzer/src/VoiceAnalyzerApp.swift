@@ -13,7 +13,7 @@ struct VoiceAnalyzerApp: App {
     var body: some Scene {
         WindowGroup {
             VStack {
-                ChartView(pitches: $voiceRecording.pitches)
+                ChartView(analysisFrames: $voiceRecording.frames)
                 ZStack {
                     Button(action: {
                         do {
@@ -29,7 +29,7 @@ struct VoiceAnalyzerApp: App {
                     HStack {
                         Spacer()
                         Button(action: {
-                            voiceRecording.pitches = []
+                            voiceRecording.frames = []
                         }) {
                             Text("Clear")
                                 .padding(.all, 5)

@@ -1,16 +1,30 @@
 #[macro_use]
 mod util;
 
+mod analyzer;
 mod ffi;
-mod irapt;
 mod logger;
 mod resample;
 mod yin;
 
-use core::iter;
 use core::ptr::NonNull;
 
-pub struct IraptState(irapt::State);
+use itertools::Itertools;
+
+//
+// public API
+//
+
+pub const FORMANT_COUNT: usize = 2;
+
+pub struct AnalyzerState(analyzer::State);
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct AnalyzerOutput {
+    pub pitch:    Pitch,
+    pub formants: [Formant; FORMANT_COUNT],
+}
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -19,35 +33,11 @@ pub struct Pitch {
     pub confidence: f32,
 }
 
-#[no_mangle]
-pub extern "C" fn voice_analyzer_rust_irapt_new(sample_rate: f64) -> *mut IraptState {
-    logger::set_logger();
-    Box::into_raw(Box::new(IraptState(irapt::State::new(sample_rate))))
-}
-
-#[no_mangle]
-pub extern "C" fn voice_analyzer_rust_irapt_process(
-    mut p_irapt: Option<NonNull<IraptState>>,
-    p_samples: *const f32,
-    samples_len: usize,
-) -> Pitch {
-    logger::set_logger();
-    let samples = NonNull::new(p_samples as *mut _)
-        .as_mut()
-        .map(|p_samples| unsafe { std::slice::from_raw_parts(p_samples.as_ptr(), samples_len) })
-        .unwrap_or(&[]);
-    let irapt = p_irapt.as_mut().map(|p_irapt| unsafe { p_irapt.as_mut() });
-    let pitch = irapt.and_then(|irapt| {
-        let first_pitch = irapt.0.process(samples);
-        first_pitch.into_iter().chain(iter::from_fn(|| irapt.0.process(&[]))).last()
-    });
-    pitch.unwrap_or_default()
-}
-
-#[no_mangle]
-pub extern "C" fn voice_analyzer_rust_irapt_drop(mut p_irapt: Option<NonNull<IraptState>>) {
-    logger::set_logger();
-    let _irapt = p_irapt.as_mut().map(|p_irapt| unsafe { Box::from_raw(p_irapt.as_ptr()) });
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct Formant {
+    pub frequency: f32,
+    pub bandwidth: f32,
 }
 
 #[no_mangle]
@@ -59,4 +49,52 @@ pub extern "C" fn voice_analyzer_rust_yin(p_samples: *const f32, samples_len: us
         .unwrap_or(&[]);
     let pitch = yin::pitch(samples, sample_rate, threshold);
     pitch.unwrap_or_default()
+}
+
+#[no_mangle]
+pub extern "C" fn voice_analyzer_rust_analyzer_new(sample_rate: f64) -> *mut AnalyzerState {
+    logger::set_logger();
+    Box::into_raw(Box::new(AnalyzerState(analyzer::State::new(sample_rate))))
+}
+
+#[no_mangle]
+pub extern "C" fn voice_analyzer_rust_analyzer_process(
+    mut p_analyzer: Option<NonNull<AnalyzerState>>,
+    p_samples: *const f32,
+    samples_len: usize,
+) -> AnalyzerOutput {
+    logger::set_logger();
+    let samples = NonNull::new(p_samples as *mut _)
+        .as_mut()
+        .map(|p_samples| unsafe { std::slice::from_raw_parts(p_samples.as_ptr(), samples_len) })
+        .unwrap_or(&[]);
+    let analyzer = p_analyzer.as_mut().map(|p_analyzer| unsafe { p_analyzer.as_mut() });
+    let output = analyzer.and_then(|analyzer| analyzer.0.process(samples));
+    output.unwrap_or_default()
+}
+
+#[no_mangle]
+pub extern "C" fn voice_analyzer_rust_analyzer_drop(mut p_analyzer: Option<NonNull<AnalyzerState>>) {
+    logger::set_logger();
+    let _analyzer = p_analyzer.as_mut().map(|p_analyzer| unsafe { Box::from_raw(p_analyzer.as_ptr()) });
+}
+
+//
+// Formants impls
+//
+
+impl AnalyzerOutput {
+    pub fn new(pitch: Pitch, formants: formants::Formants) -> Self {
+        let formants = formants
+            .iter()
+            .filter(|formant| formant.frequency.is_normal())
+            .filter(|formant| formant.frequency > pitch.value * 1.5)
+            .map(|formant| Formant {
+                frequency: formant.frequency as f32,
+                bandwidth: formant.bandwidth as f32,
+            });
+        let mut new_self = Self { pitch, ..<_>::default() };
+        new_self.formants.iter_mut().set_from(formants);
+        new_self
+    }
 }

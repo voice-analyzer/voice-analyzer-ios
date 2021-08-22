@@ -10,15 +10,36 @@ struct PitchChart: UIViewRepresentable {
     static let PITCH_C4 = 261.6
 
     private static let MINIMUM_PITCH = 55.0
-    private static let MAXIMUM_PITCH = 880.0
+    private static let MAXIMUM_PITCH = 1760.0
 
-    private let data: [ChartDataEntry]
+    private let pitchData: [ChartDataEntry]
+    private let formantsData: [[ChartDataEntry]]
 
-    init(pitches: [Pitch]) {
-        data = pitches
-            .filter({ pitch in pitch.value > Float(Self.MINIMUM_PITCH) && pitch.value < Float(Self.MAXIMUM_PITCH) })
+    init(analysisFrames: [AnalyzerOutput]) {
+        let voicedFrames: [(Pitch, [Formant])] = analysisFrames
+            .map { frame in (frame.pitch, [frame.formants.0, frame.formants.1]) }
+            .filter { pitch, _ in pitch.value > Float(Self.MINIMUM_PITCH) && pitch.value < Float(Self.MAXIMUM_PITCH) }
+
+        let pitches: [Pitch] = voicedFrames.map { pitch, _ in pitch }
+        pitchData = pitches
             .enumerated()
-            .map { ChartDataEntry(x: Double($0), y: Self.convertHzToKey(Double($1.value))) }
+            .map { index, pitch in ChartDataEntry(x: Double(index), y: Self.convertHzToKey(Double(pitch.value))) }
+
+        let formants: [[Formant]] = voicedFrames.map { _, formants in formants }
+
+        var formantsData: [[ChartDataEntry]] = []
+        for (frameIndex, frameFormants) in formants.enumerated() {
+            if frameFormants.count > formantsData.count {
+                formantsData.append(contentsOf: Array(repeating: [], count: frameFormants.count - formantsData.count))
+            }
+            for (formantIndex, formant) in frameFormants.enumerated() {
+                if formant.frequency > Float(Self.MINIMUM_PITCH) && formant.frequency < Float(Self.MAXIMUM_PITCH) {
+                    formantsData[formantIndex]
+                        .append(ChartDataEntry(x: Double(frameIndex), y: Self.convertHzToKey(Double(formant.frequency))))
+                }
+            }
+        }
+        self.formantsData = formantsData
     }
 
     func makeUIView(context: Context) -> UIViewType {
@@ -48,12 +69,23 @@ struct PitchChart: UIViewRepresentable {
     }
 
     func updateDataSet(chart: UIViewType) {
-        let pitchDataSet = LineChartDataSet(entries: data)
+        var dataSets: [LineChartDataSet] = []
+        let pitchDataSet = LineChartDataSet(entries: pitchData)
         pitchDataSet.drawCirclesEnabled = false
         pitchDataSet.drawValuesEnabled = false
         pitchDataSet.drawIconsEnabled = false
+        dataSets.append(pitchDataSet)
 
-        chart.data = LineChartData(dataSet: pitchDataSet)
+        for formantData in formantsData {
+            let formantDataSet = LineChartDataSet(entries: formantData)
+            formantDataSet.drawCirclesEnabled = false
+            formantDataSet.drawValuesEnabled = false
+            formantDataSet.drawIconsEnabled = false
+            formantDataSet.setColor(.systemYellow)
+            dataSets.append(formantDataSet)
+        }
+
+        chart.data = LineChartData(dataSets: dataSets)
     }
 }
 

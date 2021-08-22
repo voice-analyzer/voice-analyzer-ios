@@ -2,12 +2,18 @@ import os
 import AVFoundation
 import VoiceAnalyzerRust
 
+public struct AnalysisFrame {
+    var pitch: Pitch?
+    var formants: [Formant]
+}
+
 public class VoiceRecordingModel: ObservableObject {
     static let THRESHOLD: Float = 0.20
+    static let FORMANT_SAFETY_MARGIN: Float64 = 50.0
 
-    @Published var pitches: [Pitch] = []
+    @Published var frames: [AnalyzerOutput] = []
 
-    var pitchAnalyzer: IRAPT? = nil;
+    var analyzer: Analyzer? = nil;
     var sampleRate: Float64? = nil;
 
     struct RecordingState {
@@ -65,20 +71,20 @@ public class VoiceRecordingModel: ObservableObject {
             if let oldSampleRate = self.sampleRate {
                 os_log("sample rate changed from %f to %f", oldSampleRate, buffer.format.sampleRate)
             } else {
-                os_log("starting IRAPT with sample rate %f", buffer.format.sampleRate)
+                os_log("starting analyzer with sample rate %f", buffer.format.sampleRate)
             }
-            self.pitchAnalyzer = nil
+            self.analyzer = nil
             self.sampleRate = buffer.format.sampleRate
         }
-        let pitchAnalyzer = self.pitchAnalyzer ?? IRAPT(sampleRate: buffer.format.sampleRate)
-        self.pitchAnalyzer = pitchAnalyzer
+        let analyzer = self.analyzer ?? Analyzer(sampleRate: buffer.format.sampleRate)
+        self.analyzer = analyzer
 
-        let pitch = pitchAnalyzer.process(
+        let output = analyzer.process(
             samples: buffer.floatChannelData!.pointee,
             samplesLen: UInt(buffer.frameLength))
-        if pitch.confidence > Self.THRESHOLD {
+        if output.pitch.confidence > Self.THRESHOLD {
             DispatchQueue.main.async {
-                self.pitches.append(pitch)
+                self.frames.append(output)
             }
         }
     }

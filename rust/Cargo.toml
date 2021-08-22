@@ -9,6 +9,7 @@ crate_type = ["staticlib"]
 
 [dependencies]
 derive_more = "0.99"
+formants = { path = "../formants-rs" }
 itertools = "0.10"
 irapt = { git = "https://github.com/voice-analyzer/irapt-rs.git" }
 log = "0.4"

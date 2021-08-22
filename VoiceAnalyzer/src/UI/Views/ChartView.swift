@@ -3,9 +3,9 @@ import Charts
 import VoiceAnalyzerRust
 
 struct ChartView: View {
-    @Binding var pitches: [Pitch]
+    @Binding var analysisFrames: [AnalyzerOutput]
 
     var body: some View {
-        PitchChart(pitches: pitches)
+        PitchChart(analysisFrames: analysisFrames)
     }
 }

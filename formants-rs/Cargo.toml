@@ -1,0 +1,11 @@
+[package]
+name    = "formants"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+cty = "0.2"
+
+[build-dependencies]
+bindgen = "0.59"
+cc = "1.0"
