@@ -49,7 +49,7 @@ Pod::Spec.new do |s|
       :execution_position => :before_compile,
       :output_files => ['target/universal/release/libvoice_analyzer_rust.a'],
       :script => %q(
-          make -C ${PODS_TARGET_SRCROOT} rust-build-universal CARGO="${CARGO:-$HOME/.cargo/bin/cargo}"
+          PATH="/bin:/usr/bin:$PATH" make -C ${PODS_TARGET_SRCROOT} rust-build-universal CARGO="${CARGO:-$HOME/.cargo/bin/cargo}"
       ),
     }
   ]
