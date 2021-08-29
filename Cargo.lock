@@ -805,6 +805,7 @@ dependencies = [
  "log",
  "num",
  "rustfft",
+ "toml",
 ]
 
 [[package]]

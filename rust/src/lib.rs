@@ -9,6 +9,7 @@ mod yin;
 
 use core::ptr::NonNull;
 
+use analyzer::Analyzer;
 use itertools::Itertools;
 
 //
@@ -17,7 +18,13 @@ use itertools::Itertools;
 
 pub const FORMANT_COUNT: usize = 2;
 
-pub struct AnalyzerState(analyzer::State);
+pub struct AnalyzerState(Analyzer);
+
+#[repr(C)]
+pub enum PitchEstimationAlgorithm {
+    Irapt,
+    Yin,
+}
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -41,20 +48,12 @@ pub struct Formant {
 }
 
 #[no_mangle]
-pub extern "C" fn voice_analyzer_rust_yin(p_samples: *const f32, samples_len: usize, sample_rate: u32, threshold: f32) -> Pitch {
+pub extern "C" fn voice_analyzer_rust_analyzer_new(
+    sample_rate: f64,
+    pitch_estimation_algorithm: PitchEstimationAlgorithm,
+) -> *mut AnalyzerState {
     logger::set_logger();
-    let samples = NonNull::new(p_samples as *mut _)
-        .as_mut()
-        .map(|p_samples| unsafe { std::slice::from_raw_parts(p_samples.as_ptr(), samples_len) })
-        .unwrap_or(&[]);
-    let pitch = yin::pitch(samples, sample_rate, threshold);
-    pitch.unwrap_or_default()
-}
-
-#[no_mangle]
-pub extern "C" fn voice_analyzer_rust_analyzer_new(sample_rate: f64) -> *mut AnalyzerState {
-    logger::set_logger();
-    Box::into_raw(Box::new(AnalyzerState(analyzer::State::new(sample_rate))))
+    Box::into_raw(Box::new(AnalyzerState(Analyzer::new(sample_rate, pitch_estimation_algorithm))))
 }
 
 #[no_mangle]

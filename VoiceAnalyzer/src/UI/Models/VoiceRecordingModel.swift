@@ -8,8 +8,7 @@ public struct AnalysisFrame {
 }
 
 public class VoiceRecordingModel: ObservableObject {
-    static let THRESHOLD: Float = 0.20
-    static let FORMANT_SAFETY_MARGIN: Float64 = 50.0
+    static let CONFIDENCE_THRESHOLD: Float = 0.20
 
     @Published var frames: [AnalyzerOutput] = []
 
@@ -76,13 +75,13 @@ public class VoiceRecordingModel: ObservableObject {
             self.analyzer = nil
             self.sampleRate = buffer.format.sampleRate
         }
-        let analyzer = self.analyzer ?? Analyzer(sampleRate: buffer.format.sampleRate)
+        let analyzer = self.analyzer ?? Analyzer(sampleRate: buffer.format.sampleRate, pitchEstimationAlgorithm: PitchEstimationAlgorithm.Irapt)
         self.analyzer = analyzer
 
         let output = analyzer.process(
             samples: buffer.floatChannelData!.pointee,
             samplesLen: UInt(buffer.frameLength))
-        if output.pitch.confidence > Self.THRESHOLD {
+        if output.pitch.confidence > Self.CONFIDENCE_THRESHOLD {
             DispatchQueue.main.async {
                 self.frames.append(output)
             }

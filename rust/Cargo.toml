@@ -22,3 +22,4 @@ csv = "1.1"
 [build-dependencies]
 bindgen = "0.59"
 cbindgen = "0.19"
+toml = "0.5"

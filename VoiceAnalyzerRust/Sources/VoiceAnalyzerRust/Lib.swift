@@ -3,16 +3,18 @@ import libvoice_analyzer_rust
 public typealias Pitch = libvoice_analyzer_rust.Pitch
 public typealias Formant = libvoice_analyzer_rust.Formant
 public typealias AnalyzerOutput = libvoice_analyzer_rust.AnalyzerOutput
+public typealias PitchEstimationAlgorithm = libvoice_analyzer_rust.PitchEstimationAlgorithm
 
-public func yin(samples: UnsafePointer<Float>, samplesLen: UInt, sampleRate: UInt32, threshold: Float) -> Pitch {
-    return voice_analyzer_rust_yin(samples, samplesLen, sampleRate, threshold)
+extension PitchEstimationAlgorithm: Hashable {
+    public static let Irapt = libvoice_analyzer_rust.PitchEstimationAlgorithm_Irapt
+    public static let Yin = libvoice_analyzer_rust.PitchEstimationAlgorithm_Yin
 }
 
 public class Analyzer {
     let analyzer: OpaquePointer
 
-    public init(sampleRate: Float64) {
-        analyzer = voice_analyzer_rust_analyzer_new(sampleRate)
+    public init(sampleRate: Float64, pitchEstimationAlgorithm: PitchEstimationAlgorithm) {
+        analyzer = voice_analyzer_rust_analyzer_new(sampleRate, pitchEstimationAlgorithm)
     }
 
     deinit {
