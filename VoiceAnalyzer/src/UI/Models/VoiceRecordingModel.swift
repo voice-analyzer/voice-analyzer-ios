@@ -12,12 +12,13 @@ public class VoiceRecordingModel: ObservableObject {
 
     @Published var frames: [AnalyzerOutput] = []
 
-    var analyzer: Analyzer? = nil;
-    var sampleRate: Float64? = nil;
-
     struct RecordingState {
         let activity: AudioSession.Activity
         let engine: AVAudioEngine
+
+        var analyzer: Analyzer? = nil
+        var sampleRate: Float64? = nil
+        var pitchEstimationAlgorithm: PitchEstimationAlgorithm? = nil
     }
 
     private var recordingState: RecordingState?
@@ -26,7 +27,7 @@ public class VoiceRecordingModel: ObservableObject {
         get { if let _ = recordingState { return true } else { return false } }
     }
 
-    public func toggleRecording(env: Environment) throws {
+    public func toggleRecording(env: AppEnvironment) throws {
         if let _ = self.recordingState {
             stopRecording(env: env)
         } else {
@@ -34,7 +35,7 @@ public class VoiceRecordingModel: ObservableObject {
         }
     }
 
-    public func startRecording(env: Environment) throws {
+    public func startRecording(env: AppEnvironment) throws {
         if let _ = self.recordingState {
             stopRecording(env: env)
         }
@@ -47,7 +48,7 @@ public class VoiceRecordingModel: ObservableObject {
         let engine = AVAudioEngine()
         let inputFormat = engine.inputNode.outputFormat(forBus: 0)
         engine.inputNode.installTap(onBus: 0, bufferSize: 512, format: inputFormat) {
-            [weak self] (buffer, time) in self?.processData(buffer: buffer, time: time)
+            [weak self] (buffer, time) in self?.processData(buffer: buffer, time: time, env: env)
         }
 
         try engine.start()
@@ -55,7 +56,7 @@ public class VoiceRecordingModel: ObservableObject {
         self.recordingState = RecordingState(activity: activity, engine: engine)
     }
 
-    public func stopRecording(env: Environment) {
+    public func stopRecording(env: AppEnvironment) {
         guard let state = self.recordingState else { return }
         recordingState = nil
 
@@ -65,18 +66,41 @@ public class VoiceRecordingModel: ObservableObject {
         env.audioSession.endActivity(state.activity)
     }
 
-    func processData(buffer: AVAudioPCMBuffer, time: AVAudioTime) {
-        if buffer.format.sampleRate != self.sampleRate {
-            if let oldSampleRate = self.sampleRate {
+    func processData(buffer: AVAudioPCMBuffer, time: AVAudioTime, env: AppEnvironment) {
+        if buffer.format.sampleRate != self.recordingState?.sampleRate {
+            if let oldSampleRate = self.recordingState?.sampleRate {
                 os_log("sample rate changed from %f to %f", oldSampleRate, buffer.format.sampleRate)
-            } else {
-                os_log("starting analyzer with sample rate %f", buffer.format.sampleRate)
             }
-            self.analyzer = nil
-            self.sampleRate = buffer.format.sampleRate
+            self.recordingState?.analyzer = nil
+            self.recordingState?.sampleRate = buffer.format.sampleRate
         }
-        let analyzer = self.analyzer ?? Analyzer(sampleRate: buffer.format.sampleRate, pitchEstimationAlgorithm: PitchEstimationAlgorithm.Irapt)
-        self.analyzer = analyzer
+
+        let pitchEstimationAlgorithm: PitchEstimationAlgorithm
+        switch env.preferences.pitchEstimationAlgorithm {
+        case .IRAPT: pitchEstimationAlgorithm = PitchEstimationAlgorithm.Irapt
+        case .Yin:   pitchEstimationAlgorithm = PitchEstimationAlgorithm.Yin
+        }
+
+        if pitchEstimationAlgorithm != self.recordingState?.pitchEstimationAlgorithm {
+            if let oldPitchEstimationAlgorithm = self.recordingState?.pitchEstimationAlgorithm {
+                os_log("pitch estimation algorithm changed from %d to %d",
+                       oldPitchEstimationAlgorithm.rawValue,
+                       pitchEstimationAlgorithm.rawValue)
+            }
+            self.recordingState?.analyzer = nil
+            self.recordingState?.pitchEstimationAlgorithm = pitchEstimationAlgorithm
+        }
+
+        let analyzer = self.recordingState?.analyzer ?? {
+            os_log("starting analyzer with pitch estimation algorithm %d and sample rate %f",
+                   pitchEstimationAlgorithm.rawValue,
+                   buffer.format.sampleRate)
+            return Analyzer(
+                sampleRate: buffer.format.sampleRate,
+                pitchEstimationAlgorithm: pitchEstimationAlgorithm
+            )
+        }()
+        self.recordingState?.analyzer = analyzer
 
         let output = analyzer.process(
             samples: buffer.floatChannelData!.pointee,

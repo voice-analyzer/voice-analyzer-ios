@@ -5,37 +5,43 @@ import VoiceAnalyzerRust
 
 @main
 struct VoiceAnalyzerApp: App {
-    private let env = Environment()
+    @Environment(\.env) var env: AppEnvironment
 
     @StateObject private var voiceRecording: VoiceRecordingModel = VoiceRecordingModel()
     @State private var isRecording = false
 
     var body: some Scene {
         WindowGroup {
-            VStack {
-                ChartView(analysisFrames: $voiceRecording.frames)
-                ZStack {
-                    Button(action: {
-                        do {
-                            try voiceRecording.toggleRecording(env: env)
-                            isRecording = voiceRecording.isRecording
-                        } catch {
-                            os_log("error toggling recording: %@", error.localizedDescription)
-                        }
-                    }) {
-                        Text(isRecording ? "Stop" : "Record")
-                            .padding(.all, 5)
-                    }
+            NavigationView {
+                VStack {
+                    ChartView(analysisFrames: $voiceRecording.frames)
                     HStack {
+                        NavigationLink(destination: PreferencesView(preferences: env.preferences)) {
+                            Image(systemName: "gear")
+                                .accessibilityLabel("Preferences")
+                        }
+                        Spacer()
+                        Button(action: {
+                            do {
+                                try voiceRecording.toggleRecording(env: env)
+                                isRecording = voiceRecording.isRecording
+                            } catch {
+                                os_log("error toggling recording: %@", error.localizedDescription)
+                            }
+                        }) {
+                            Text(isRecording ? "Stop" : "Record")
+                        }
                         Spacer()
                         Button(action: {
                             voiceRecording.frames = []
                         }) {
                             Text("Clear")
-                                .padding(.all, 5)
                         }
                     }
+                    .padding(.horizontal, 10)
                 }
+                .navigationBarHidden(true)
+                .navigationBarTitleDisplayMode(.inline)
             }
             .onAppear {
                 do {

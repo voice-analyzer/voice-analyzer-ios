@@ -9,11 +9,13 @@
 /* Begin PBXBuildFile section */
 		C82DB1F926A3548600B0A7FE /* VoiceRecordingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82DB1F826A3548600B0A7FE /* VoiceRecordingModel.swift */; };
 		C82DB1FB26A357CB00B0A7FE /* AudioSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82DB1FA26A357CB00B0A7FE /* AudioSession.swift */; };
-		C82DB1FE26A35AC800B0A7FE /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82DB1FD26A35AC800B0A7FE /* Environment.swift */; };
+		C82DB1FE26A35AC800B0A7FE /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82DB1FD26A35AC800B0A7FE /* AppEnvironment.swift */; };
 		C82DB20426A406B500B0A7FE /* Weak.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82DB20326A406B500B0A7FE /* Weak.swift */; };
+		C864B3EB26DEE03600E5E0D3 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */; };
 		C881ABFD266BFF7C006F83D4 /* VoiceAnalyzerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */; };
 		C881ABFF266BFF7C006F83D4 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFE266BFF7C006F83D4 /* ChartView.swift */; };
 		C881AC01266BFF7E006F83D4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C881AC00266BFF7E006F83D4 /* Images.xcassets */; };
+		C8D67BDD26DBF8A200DBAB13 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */; };
 		C8D986BD266DAEAF00228FB3 /* PitchChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D986BC266DAEAF00228FB3 /* PitchChart.swift */; };
 		E9B9E3CBFD19816FDE13CDCE /* Pods_VoiceAnalyzer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D501EB47E636FA8CDFB83C1 /* Pods_VoiceAnalyzer.framework */; };
 /* End PBXBuildFile section */
@@ -24,14 +26,16 @@
 		43B928FDA7E004FEDE0DF263 /* Pods-VoiceAnalyzer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VoiceAnalyzer.debug.xcconfig"; path = "Target Support Files/Pods-VoiceAnalyzer/Pods-VoiceAnalyzer.debug.xcconfig"; sourceTree = "<group>"; };
 		C82DB1F826A3548600B0A7FE /* VoiceRecordingModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingModel.swift; sourceTree = "<group>"; };
 		C82DB1FA26A357CB00B0A7FE /* AudioSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSession.swift; sourceTree = "<group>"; };
-		C82DB1FD26A35AC800B0A7FE /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
+		C82DB1FD26A35AC800B0A7FE /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		C82DB20126A3E0BB00B0A7FE /* VoiceAnalyzerRust */ = {isa = PBXFileReference; lastKnownFileType = folder; name = VoiceAnalyzerRust; path = VoiceAnalyzerRust/Sources/VoiceAnalyzerRust; sourceTree = "<group>"; };
 		C82DB20326A406B500B0A7FE /* Weak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weak.swift; sourceTree = "<group>"; };
+		C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
 		C881ABF9266BFF7C006F83D4 /* VoiceAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAnalyzerApp.swift; sourceTree = "<group>"; };
 		C881ABFE266BFF7C006F83D4 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
 		C881AC00266BFF7E006F83D4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		C881AC05266BFF7E006F83D4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		C8D986BC266DAEAF00228FB3 /* PitchChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchChart.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -68,7 +72,8 @@
 			isa = PBXGroup;
 			children = (
 				C82DB1FA26A357CB00B0A7FE /* AudioSession.swift */,
-				C82DB1FD26A35AC800B0A7FE /* Environment.swift */,
+				C82DB1FD26A35AC800B0A7FE /* AppEnvironment.swift */,
+				C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */,
 			);
 			path = Environment;
 			sourceTree = "<group>";
@@ -126,6 +131,7 @@
 			children = (
 				C8D986BB266DAE9300228FB3 /* Charts */,
 				C881ABFE266BFF7C006F83D4 /* ChartView.swift */,
+				C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -173,6 +179,8 @@
 			dependencies = (
 			);
 			name = VoiceAnalyzer;
+			packageProductDependencies = (
+			);
 			productName = VoiceAnalyzer;
 			productReference = C881ABF9266BFF7C006F83D4 /* VoiceAnalyzer.app */;
 			productType = "com.apple.product-type.application";
@@ -201,6 +209,8 @@
 				Base,
 			);
 			mainGroup = C881ABF0266BFF7C006F83D4;
+			packageReferences = (
+			);
 			productRefGroup = C881ABFA266BFF7C006F83D4 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -269,12 +279,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				C82DB1FB26A357CB00B0A7FE /* AudioSession.swift in Sources */,
-				C82DB1FE26A35AC800B0A7FE /* Environment.swift in Sources */,
+				C82DB1FE26A35AC800B0A7FE /* AppEnvironment.swift in Sources */,
 				C82DB1F926A3548600B0A7FE /* VoiceRecordingModel.swift in Sources */,
 				C881ABFF266BFF7C006F83D4 /* ChartView.swift in Sources */,
 				C8D986BD266DAEAF00228FB3 /* PitchChart.swift in Sources */,
+				C8D67BDD26DBF8A200DBAB13 /* PreferencesView.swift in Sources */,
 				C881ABFD266BFF7C006F83D4 /* VoiceAnalyzerApp.swift in Sources */,
 				C82DB20426A406B500B0A7FE /* Weak.swift in Sources */,
+				C864B3EB26DEE03600E5E0D3 /* AppPreferences.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
