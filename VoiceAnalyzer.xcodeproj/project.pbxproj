@@ -17,6 +17,7 @@
 		C881AC01266BFF7E006F83D4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C881AC00266BFF7E006F83D4 /* Images.xcassets */; };
 		C8D67BDD26DBF8A200DBAB13 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */; };
 		C8D986BD266DAEAF00228FB3 /* PitchChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D986BC266DAEAF00228FB3 /* PitchChart.swift */; };
+		C8E68C6126E2880F003662A9 /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = C8E68C6026E2880F003662A9 /* Charts */; };
 		E9B9E3CBFD19816FDE13CDCE /* Pods_VoiceAnalyzer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D501EB47E636FA8CDFB83C1 /* Pods_VoiceAnalyzer.framework */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9B9E3CBFD19816FDE13CDCE /* Pods_VoiceAnalyzer.framework in Frameworks */,
+				C8E68C6126E2880F003662A9 /* Charts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,6 +182,7 @@
 			);
 			name = VoiceAnalyzer;
 			packageProductDependencies = (
+				C8E68C6026E2880F003662A9 /* Charts */,
 			);
 			productName = VoiceAnalyzer;
 			productReference = C881ABF9266BFF7C006F83D4 /* VoiceAnalyzer.app */;
@@ -210,6 +213,7 @@
 			);
 			mainGroup = C881ABF0266BFF7C006F83D4;
 			packageReferences = (
+				C8E68C5F26E2880F003662A9 /* XCRemoteSwiftPackageReference "Charts" */,
 			);
 			productRefGroup = C881ABFA266BFF7C006F83D4 /* Products */;
 			projectDirPath = "";
@@ -522,6 +526,25 @@
 			defaultConfigurationName = "App Store Release";
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C8E68C5F26E2880F003662A9 /* XCRemoteSwiftPackageReference "Charts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/danielgindi/Charts.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C8E68C6026E2880F003662A9 /* Charts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C8E68C5F26E2880F003662A9 /* XCRemoteSwiftPackageReference "Charts" */;
+			productName = Charts;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C881ABF1266BFF7C006F83D4 /* Project object */;
 }
