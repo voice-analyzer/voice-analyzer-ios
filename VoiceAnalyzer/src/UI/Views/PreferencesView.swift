@@ -1,5 +1,4 @@
 import SwiftUI
-import VoiceAnalyzerRust
 
 struct PreferencesView: View {
     @StateObject var preferences: AppPreferences

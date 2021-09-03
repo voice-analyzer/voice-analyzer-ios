@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 53;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -18,6 +18,7 @@
 		C8D67BDD26DBF8A200DBAB13 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */; };
 		C8D986BD266DAEAF00228FB3 /* PitchChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D986BC266DAEAF00228FB3 /* PitchChart.swift */; };
 		C8E68C6126E2880F003662A9 /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = C8E68C6026E2880F003662A9 /* Charts */; };
+		C8E68C6B26E28B98003662A9 /* Lib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E68C6726E28B98003662A9 /* Lib.swift */; };
 		E9B9E3CBFD19816FDE13CDCE /* Pods_VoiceAnalyzer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D501EB47E636FA8CDFB83C1 /* Pods_VoiceAnalyzer.framework */; };
 /* End PBXBuildFile section */
 
@@ -28,7 +29,6 @@
 		C82DB1F826A3548600B0A7FE /* VoiceRecordingModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingModel.swift; sourceTree = "<group>"; };
 		C82DB1FA26A357CB00B0A7FE /* AudioSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSession.swift; sourceTree = "<group>"; };
 		C82DB1FD26A35AC800B0A7FE /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
-		C82DB20126A3E0BB00B0A7FE /* VoiceAnalyzerRust */ = {isa = PBXFileReference; lastKnownFileType = folder; name = VoiceAnalyzerRust; path = VoiceAnalyzerRust/Sources/VoiceAnalyzerRust; sourceTree = "<group>"; };
 		C82DB20326A406B500B0A7FE /* Weak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weak.swift; sourceTree = "<group>"; };
 		C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
 		C881ABF9266BFF7C006F83D4 /* VoiceAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -38,6 +38,9 @@
 		C881AC05266BFF7E006F83D4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		C8D986BC266DAEAF00228FB3 /* PitchChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchChart.swift; sourceTree = "<group>"; };
+		C8E68C6726E28B98003662A9 /* Lib.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lib.swift; sourceTree = "<group>"; };
+		C8E68C6926E28B98003662A9 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
+		C8E68C6A26E28B98003662A9 /* voice-analyzer-rust.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "voice-analyzer-rust.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,7 +94,6 @@
 		C881ABF0266BFF7C006F83D4 = {
 			isa = PBXGroup;
 			children = (
-				C82DB20126A3E0BB00B0A7FE /* VoiceAnalyzerRust */,
 				C881ABFB266BFF7C006F83D4 /* VoiceAnalyzer */,
 				C881ABFA266BFF7C006F83D4 /* Products */,
 				C67DA38172209A7BDEE0971E /* Pods */,
@@ -120,6 +122,7 @@
 		C8D986B8266CCBE300228FB3 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				C8E68C6526E28B98003662A9 /* FFI */,
 				C82DB20226A406A200B0A7FE /* Utilities */,
 				C82DB1FC26A3580500B0A7FE /* Environment */,
 				C8D986BA266CDCD600228FB3 /* UI */,
@@ -155,6 +158,32 @@
 			path = Charts;
 			sourceTree = "<group>";
 		};
+		C8E68C6526E28B98003662A9 /* FFI */ = {
+			isa = PBXGroup;
+			children = (
+				C8E68C6626E28B98003662A9 /* Rust */,
+			);
+			path = FFI;
+			sourceTree = "<group>";
+		};
+		C8E68C6626E28B98003662A9 /* Rust */ = {
+			isa = PBXGroup;
+			children = (
+				C8E68C6726E28B98003662A9 /* Lib.swift */,
+				C8E68C6826E28B98003662A9 /* libvoice_analyzer_rust */,
+			);
+			path = Rust;
+			sourceTree = "<group>";
+		};
+		C8E68C6826E28B98003662A9 /* libvoice_analyzer_rust */ = {
+			isa = PBXGroup;
+			children = (
+				C8E68C6926E28B98003662A9 /* module.modulemap */,
+				C8E68C6A26E28B98003662A9 /* voice-analyzer-rust.h */,
+			);
+			path = libvoice_analyzer_rust;
+			sourceTree = "<group>";
+		};
 		FEB935C82801FE7747CE5DBA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -170,6 +199,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C881AC1E266BFF7E006F83D4 /* Build configuration list for PBXNativeTarget "VoiceAnalyzer" */;
 			buildPhases = (
+				C8E68C6E26E29064003662A9 /* Compile Rust Sources */,
 				D45CDEC581F24DA4E639400A /* [CP] Check Pods Manifest.lock */,
 				C881ABF5266BFF7C006F83D4 /* Sources */,
 				C881ABF6266BFF7C006F83D4 /* Frameworks */,
@@ -253,6 +283,25 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-VoiceAnalyzer/Pods-VoiceAnalyzer-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		C8E68C6E26E29064003662A9 /* Compile Rust Sources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Rust Sources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "PATH=\"/bin:/usr/bin:$PATH\" make rust-build CARGO=\"${CARGO:-$HOME/.cargo/bin/cargo}\"\n";
+		};
 		D45CDEC581F24DA4E639400A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -285,6 +334,7 @@
 				C82DB1FB26A357CB00B0A7FE /* AudioSession.swift in Sources */,
 				C82DB1FE26A35AC800B0A7FE /* AppEnvironment.swift in Sources */,
 				C82DB1F926A3548600B0A7FE /* VoiceRecordingModel.swift in Sources */,
+				C8E68C6B26E28B98003662A9 /* Lib.swift in Sources */,
 				C881ABFF266BFF7C006F83D4 /* ChartView.swift in Sources */,
 				C8D986BD266DAEAF00228FB3 /* PitchChart.swift in Sources */,
 				C8D67BDD26DBF8A200DBAB13 /* PreferencesView.swift in Sources */,
@@ -360,6 +410,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = VoiceAnalyzer/src/FFI/Rust/libvoice_analyzer_rust;
+				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "target/aarch64-apple-ios/debug";
+				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=x86_64]" = "target/x86_64-apple-ios/debug";
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=arm64]" = "target/aarch64-apple-ios-sim/debug";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -428,6 +482,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = VoiceAnalyzer/src/FFI/Rust/libvoice_analyzer_rust;
+				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "target/aarch64-apple-ios/release";
+				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=x86_64]" = "target/x86_64-apple-ios/release";
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=arm64]" = "target/aarch64-apple-ios-sim/release";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -457,7 +515,6 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_STRICT_ALIASING = NO;
 				INFOPLIST_FILE = VoiceAnalyzer/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -489,7 +546,6 @@
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_STRICT_ALIASING = NO;
 				INFOPLIST_FILE = VoiceAnalyzer/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

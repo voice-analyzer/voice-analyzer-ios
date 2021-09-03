@@ -4,5 +4,5 @@ use_frameworks!
 source 'https://cdn.cocoapods.org/'
 
 target 'VoiceAnalyzer' do
-  pod 'VoiceAnalyzerRust', path: '.'
+  pod 'libsamplerate', '~> 0.1'
 end

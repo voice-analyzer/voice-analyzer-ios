@@ -1,7 +1,6 @@
 import os
 import SwiftUI
 import Charts
-import VoiceAnalyzerRust
 
 @main
 struct VoiceAnalyzerApp: App {

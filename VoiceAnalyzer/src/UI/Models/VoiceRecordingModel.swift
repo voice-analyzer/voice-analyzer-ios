@@ -1,6 +1,5 @@
 import os
 import AVFoundation
-import VoiceAnalyzerRust
 
 public struct AnalysisFrame {
     var pitch: Pitch?

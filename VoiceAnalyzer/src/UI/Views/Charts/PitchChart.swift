@@ -1,6 +1,5 @@
 import SwiftUI
 import Charts
-import VoiceAnalyzerRust
 
 struct PitchChart: UIViewRepresentable {
     typealias UIViewType = LineChartView

@@ -59,7 +59,6 @@ $(error Invalid CONFIGURATION $(CONFIGURATION))
 endif
 
 RUST_LIBRARIES = $(foreach target,$(RUST_TARGETS),target/$(target)/$(RUST_CONFIGURATION)/lib$(RUST_LIBRARY_NAME).a)
-RUST_UNIVERSAL_LIBRARY = target/universal/$(RUST_CONFIGURATION)/lib$(RUST_LIBRARY_NAME).a
 
 RUST_ALL_DEBUG_LIBRARIES = $(strip \
 	$(foreach target,$(RUST_ALL_TARGETS), \
@@ -106,7 +105,6 @@ help:
 	@echo
 	@echo "Targets run from xcode, which build for targets based on the environment variables ARCHS, CONFIGURATION, and PLATFORM_NAME. Currently selected is \"$(RUST_CONFIGURATION)\" configuration for target(s) $(subst $(SP),$(COMMA) ,$(RUST_TARGETS)):"
 	@echo "  rust-build           -- build rust libraries for selected configuration and targets"
-	@echo "  rust-build-universal -- build rust universal library for selected configuration and targets"
 	@echo "  rust-clean           -- clean rust build directory for selected configuration and targets"
 	@echo
 	@echo "Environment variables:"
@@ -146,9 +144,6 @@ rust-clean-release-all:
 		$(CARGO) clean -p voice-analyzer-rust --release --target $(target) $(NL) \
 	)
 
-.PHONY: rust-build-universal
-rust-build-universal: $(RUST_UNIVERSAL_LIBRARY)
-
 .PHONY: rust-build
 rust-build: $(RUST_LIBRARIES)
 
@@ -169,10 +164,6 @@ FORCE:
 #
 # rust targets
 #
-
-$(RUST_UNIVERSAL_LIBRARY): $(RUST_LIBRARIES)
-	mkdir -p $(dir $@)
-	$(LIPO) -create -output $@ $^
 
 target/%/release/lib$(RUST_LIBRARY_NAME).a: FORCE
 	if [ '' $(foreach target,$(RUST_BUILD_STD_TARGETS),-o '$*' = '$(target)') ]; then \
