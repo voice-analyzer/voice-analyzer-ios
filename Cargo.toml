@@ -1,2 +1,5 @@
 [workspace]
 members = ["formants-rs", "rust"]
+
+[profile.dev]
+opt-level = 1
