@@ -16,6 +16,7 @@ struct PreferencesView: View {
                 }
         }
     }
+
     var form: some View {
         Form {
             Section(header: Text("Pitch Estimation")) {

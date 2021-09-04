@@ -19,6 +19,7 @@
 		C8D986BD266DAEAF00228FB3 /* PitchChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D986BC266DAEAF00228FB3 /* PitchChart.swift */; };
 		C8E68C6126E2880F003662A9 /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = C8E68C6026E2880F003662A9 /* Charts */; };
 		C8E68C6B26E28B98003662A9 /* Lib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E68C6726E28B98003662A9 /* Lib.swift */; };
+		C8E68C7226E2FBC5003662A9 /* LivePitchChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E68C7126E2FBC5003662A9 /* LivePitchChart.swift */; };
 		E9B9E3CBFD19816FDE13CDCE /* Pods_VoiceAnalyzer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D501EB47E636FA8CDFB83C1 /* Pods_VoiceAnalyzer.framework */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +42,7 @@
 		C8E68C6726E28B98003662A9 /* Lib.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lib.swift; sourceTree = "<group>"; };
 		C8E68C6926E28B98003662A9 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		C8E68C6A26E28B98003662A9 /* voice-analyzer-rust.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "voice-analyzer-rust.h"; sourceTree = "<group>"; };
+		C8E68C7126E2FBC5003662A9 /* LivePitchChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePitchChart.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +139,7 @@
 				C8D986BB266DAE9300228FB3 /* Charts */,
 				C881ABFE266BFF7C006F83D4 /* ChartView.swift */,
 				C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */,
+				C8E68C7126E2FBC5003662A9 /* LivePitchChart.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -340,6 +343,7 @@
 				C8D67BDD26DBF8A200DBAB13 /* PreferencesView.swift in Sources */,
 				C881ABFD266BFF7C006F83D4 /* VoiceAnalyzerApp.swift in Sources */,
 				C82DB20426A406B500B0A7FE /* Weak.swift in Sources */,
+				C8E68C7226E2FBC5003662A9 /* LivePitchChart.swift in Sources */,
 				C864B3EB26DEE03600E5E0D3 /* AppPreferences.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
