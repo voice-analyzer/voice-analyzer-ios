@@ -40,7 +40,8 @@ struct LivePitchChart: View {
             Spacer()
             clearButton
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 8)
+        .frame(height: 44)
     }
 
     var preferencesButton: some View {
@@ -63,7 +64,7 @@ struct LivePitchChart: View {
                 os_log("error toggling recording: %@", error.localizedDescription)
             }
         }) {
-            Text(isRecording ? "Pause" : "Record")
+            Image(systemName: isRecording ? "pause" : "mic")
         }
     }
 
@@ -71,7 +72,7 @@ struct LivePitchChart: View {
         Button(action: {
             voiceRecording.frames = []
         }) {
-            Text("Clear")
+            Image(systemName: "xmark")
         }
     }
 }
