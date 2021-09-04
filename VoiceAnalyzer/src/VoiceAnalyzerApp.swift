@@ -8,39 +8,41 @@ struct VoiceAnalyzerApp: App {
 
     @StateObject private var voiceRecording: VoiceRecordingModel = VoiceRecordingModel()
     @State private var isRecording = false
+    @State private var preferencesIsPresented = false
 
     var body: some Scene {
         WindowGroup {
-            NavigationView {
-                VStack {
-                    ChartView(analysisFrames: $voiceRecording.frames)
-                    HStack {
-                        NavigationLink(destination: PreferencesView(preferences: env.preferences)) {
-                            Image(systemName: "gear")
-                                .accessibilityLabel("Preferences")
-                        }
-                        Spacer()
-                        Button(action: {
-                            do {
-                                try voiceRecording.toggleRecording(env: env)
-                                isRecording = voiceRecording.isRecording
-                            } catch {
-                                os_log("error toggling recording: %@", error.localizedDescription)
-                            }
-                        }) {
-                            Text(isRecording ? "Stop" : "Record")
-                        }
-                        Spacer()
-                        Button(action: {
-                            voiceRecording.frames = []
-                        }) {
-                            Text("Clear")
-                        }
+            VStack {
+                ChartView(analysisFrames: $voiceRecording.frames)
+                HStack {
+                    Button(action: {
+                        preferencesIsPresented = true
+                    }) {
+                        Image(systemName: "gear")
+                            .accessibilityLabel("Preferences")
                     }
-                    .padding(.horizontal, 10)
+                    .sheet(isPresented: $preferencesIsPresented) {
+                        PreferencesView(preferences: env.preferences, isPresented: $preferencesIsPresented)
+                    }
+                    Spacer()
+                    Button(action: {
+                        do {
+                            try voiceRecording.toggleRecording(env: env)
+                            isRecording = voiceRecording.isRecording
+                        } catch {
+                            os_log("error toggling recording: %@", error.localizedDescription)
+                        }
+                    }) {
+                        Text(isRecording ? "Stop" : "Record")
+                    }
+                    Spacer()
+                    Button(action: {
+                        voiceRecording.frames = []
+                    }) {
+                        Text("Clear")
+                    }
                 }
-                .navigationBarHidden(true)
-                .navigationBarTitleDisplayMode(.inline)
+                .padding(.horizontal, 10)
             }
             .onAppear {
                 do {
