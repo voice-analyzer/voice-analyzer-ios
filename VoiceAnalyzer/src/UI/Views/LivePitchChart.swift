@@ -10,13 +10,22 @@ struct LivePitchChart: View {
     @State private var preferencesIsPresented = false
 
     var body: some View {
-        NavigationView {
-            VStack {
-                chartView
-                toolbarView
+        GeometryReader {
+            geometry in
+            NavigationView {
+                VStack(spacing: 0) {
+                    chartView
+                    Divider()
+                    ZStack {
+                        toolbarView
+                    }
+                    .frame(height: 44 + geometry.safeAreaInsets.bottom, alignment: .top)
+                    .background(Color(UIColor.secondarySystemBackground))
+                }
+                .ignoresSafeArea(.container, edges: .bottom)
+                .navigationBarTitle("Pitch Estimation")
+                .navigationBarTitleDisplayMode(.inline)
             }
-            .navigationBarTitle("Pitch Estimation")
-            .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
             do {
