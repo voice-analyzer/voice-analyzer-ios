@@ -10,9 +10,13 @@ struct LivePitchChart: View {
     @State private var preferencesIsPresented = false
 
     var body: some View {
-        VStack {
-            chartView
-            toolbarView
+        NavigationView {
+            VStack {
+                chartView
+                toolbarView
+            }
+            .navigationBarTitle("Pitch Estimation")
+            .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
             do {
