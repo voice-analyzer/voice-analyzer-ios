@@ -69,11 +69,13 @@ struct PitchChart: UIViewRepresentable {
 
     func updateDataSet(chart: UIViewType) {
         var dataSets: [LineChartDataSet] = []
-        let pitchDataSet = LineChartDataSet(entries: pitchData)
-        pitchDataSet.drawCirclesEnabled = false
-        pitchDataSet.drawValuesEnabled = false
-        pitchDataSet.drawIconsEnabled = false
-        dataSets.append(pitchDataSet)
+        if !pitchData.isEmpty {
+            let pitchDataSet = LineChartDataSet(entries: pitchData)
+            pitchDataSet.drawCirclesEnabled = false
+            pitchDataSet.drawValuesEnabled = false
+            pitchDataSet.drawIconsEnabled = false
+            dataSets.append(pitchDataSet)
+        }
 
         for formantData in formantsData {
             let formantDataSet = LineChartDataSet(entries: formantData)
@@ -82,6 +84,13 @@ struct PitchChart: UIViewRepresentable {
             formantDataSet.drawIconsEnabled = false
             formantDataSet.setColor(.systemYellow)
             dataSets.append(formantDataSet)
+        }
+
+        if dataSets.isEmpty {
+            let dummyDataEntries = [ChartDataEntry(x: 1, y: 0)]
+            let dummyDataSet = LineChartDataSet(entries: dummyDataEntries)
+            dummyDataSet.visible = false
+            dataSets.append(dummyDataSet)
         }
 
         chart.data = LineChartData(dataSets: dataSets)
