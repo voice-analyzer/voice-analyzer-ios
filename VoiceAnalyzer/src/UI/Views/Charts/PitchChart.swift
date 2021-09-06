@@ -74,6 +74,7 @@ struct PitchChart: UIViewRepresentable {
             pitchDataSet.drawCirclesEnabled = false
             pitchDataSet.drawValuesEnabled = false
             pitchDataSet.drawIconsEnabled = false
+            pitchDataSet.mode = .horizontalBezier
             dataSets.append(pitchDataSet)
         }
 
@@ -82,6 +83,7 @@ struct PitchChart: UIViewRepresentable {
             formantDataSet.drawCirclesEnabled = false
             formantDataSet.drawValuesEnabled = false
             formantDataSet.drawIconsEnabled = false
+            formantDataSet.mode = .horizontalBezier
             formantDataSet.setColor(.systemYellow)
             dataSets.append(formantDataSet)
         }
