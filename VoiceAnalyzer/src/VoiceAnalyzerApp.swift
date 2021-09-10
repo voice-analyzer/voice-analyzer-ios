@@ -6,7 +6,7 @@ import Charts
 struct VoiceAnalyzerApp: App {
     var body: some Scene {
         WindowGroup {
-            LivePitchChart()
+            AppView()
         }
     }
 }

@@ -17,7 +17,13 @@ public class AudioSession {
     }
 
     public func endActivity(_ activity: Activity) {
-        let _ = cleanupActivities()
+        activityWeakRefs.removeAll { ObjectIdentifier(activity) == $0.value.map({ ObjectIdentifier($0) }) }
+
+        if let session = activity.session, ObjectIdentifier(session) == ObjectIdentifier(self) {
+            activity.session = nil
+        }
+
+        updateCategory()
     }
 
     func cleanupActivities() -> [Activity] {

@@ -5,6 +5,7 @@ public class AppEnvironment {
 
     let audioSession = AudioSession()
     let preferences = AppPreferences()
+    lazy var databaseStorage = try! DatabaseStorage()
 }
 
 struct AppEnvironmentKey: EnvironmentKey {

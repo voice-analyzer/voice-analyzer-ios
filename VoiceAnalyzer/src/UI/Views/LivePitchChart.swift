@@ -3,29 +3,29 @@ import Foundation
 import SwiftUI
 
 struct LivePitchChart: View {
+    @Binding var isPresented: Bool
+    @ObservedObject var voiceRecording: VoiceRecordingModel
+
     @Environment(\.env) var env: AppEnvironment
 
-    @StateObject private var voiceRecording: VoiceRecordingModel = VoiceRecordingModel()
     @State private var isRecording = false
     @State private var preferencesIsPresented = false
 
     var body: some View {
         GeometryReader {
             geometry in
-            NavigationView {
-                VStack(spacing: 0) {
-                    chartView
-                    Divider()
-                    ZStack {
-                        toolbarView
-                    }
-                    .frame(height: 44 + geometry.safeAreaInsets.bottom, alignment: .top)
-                    .background(Color(UIColor.secondarySystemBackground))
+            VStack(spacing: 0) {
+                chartView
+                Divider()
+                ZStack {
+                    toolbarView
                 }
-                .ignoresSafeArea(.container, edges: .bottom)
-                .navigationBarTitle("Pitch Estimation")
-                .navigationBarTitleDisplayMode(.inline)
+                .frame(height: 44 + geometry.safeAreaInsets.bottom, alignment: .top)
+                .background(Color(UIColor.secondarySystemBackground))
             }
+            .ignoresSafeArea(.container, edges: .bottom)
+            .navigationBarTitle("Pitch Estimation")
+            .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
             do {
@@ -35,6 +35,10 @@ struct LivePitchChart: View {
                 os_log("error starting recording: %@", error.localizedDescription)
             }
         }
+        .onDisappear {
+            voiceRecording.stopRecording(env: env)
+            isRecording = voiceRecording.isRecording
+        }
     }
 
     var chartView: some View {
@@ -42,12 +46,21 @@ struct LivePitchChart: View {
     }
 
     var toolbarView: some View {
-        HStack {
-            preferencesButton
-            Spacer()
-            recordButton
-            Spacer()
-            clearButton
+        ZStack {
+            HStack {
+                preferencesButton
+                Spacer()
+            }
+            HStack {
+                Spacer()
+                recordButton
+                Spacer()
+            }
+            HStack(spacing: 16) {
+                Spacer()
+                saveButton
+                clearButton
+            }
         }
         .imageScale(.large)
         .padding(.horizontal, 16)
@@ -80,9 +93,24 @@ struct LivePitchChart: View {
 
     var clearButton: some View {
         Button(action: {
-            voiceRecording.frames = []
+            voiceRecording.clearRecording()
         }) {
-            Image(systemName: "xmark")
+            Image(systemName: "trash")
+        }
+        .accentColor(Color.red)
+    }
+
+    var saveButton: some View {
+        Button(action: {
+            do {
+                try voiceRecording.saveRecording(env: env)
+                isPresented = false
+            } catch {
+                os_log("error saving recording: %@", error.localizedDescription)
+            }
+            voiceRecording.stopRecording(env: env)
+        }) {
+            Image(systemName: "square.and.arrow.down")
         }
     }
 }
