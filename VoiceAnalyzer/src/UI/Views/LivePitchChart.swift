@@ -49,7 +49,8 @@ struct LivePitchChart: View {
             Spacer()
             clearButton
         }
-        .padding(.horizontal, 8)
+        .imageScale(.large)
+        .padding(.horizontal, 16)
         .frame(height: 44)
     }
 
