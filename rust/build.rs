@@ -16,7 +16,7 @@ fn main() {
         .with_language(cbindgen::Language::C)
         .generate()
         .unwrap()
-        .write_to_file(format!("../VoiceAnalyzerRust/Sources/libvoice_analyzer_rust/{}.h", pkg_name));
+        .write_to_file(format!("../VoiceAnalyzer/src/FFI/Rust/libvoice_analyzer_rust/{}.h", pkg_name));
 
     println!("cargo:rerun-if-changed=src/ffi/bindgen_wrapper.h");
 

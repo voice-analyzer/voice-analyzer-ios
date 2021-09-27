@@ -4,4 +4,4 @@
 xcuserdata
 
 /target/
-/VoiceAnalyzerRust/Sources/libvoice_analyzer_rust/voice-analyzer-rust.h
+/VoiceAnalyzer/src/FFI/Rust/libvoice_analyzer_rust/voice-analyzer-rust.h
