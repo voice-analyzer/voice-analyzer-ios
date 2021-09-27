@@ -415,6 +415,7 @@
 				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = VoiceAnalyzer/src/FFI/Rust/libvoice_analyzer_rust;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "target/aarch64-apple-ios/debug";
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=x86_64]" = "target/x86_64-apple-ios/debug";
 				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=arm64]" = "target/aarch64-apple-ios-sim/debug";
@@ -487,6 +488,7 @@
 				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = VoiceAnalyzer/src/FFI/Rust/libvoice_analyzer_rust;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "target/aarch64-apple-ios/release";
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=x86_64]" = "target/x86_64-apple-ios/release";
 				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=arm64]" = "target/aarch64-apple-ios-sim/release";
