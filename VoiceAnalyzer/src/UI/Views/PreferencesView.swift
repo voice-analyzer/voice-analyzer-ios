@@ -25,6 +25,16 @@ struct PreferencesView: View {
                     Text("IRAPT").tag(PitchEstimationAlgorithmPreference.IRAPT)
                 }
             }
+            Section {
+                VStack(alignment: .leading) {
+                    Toggle(isOn: preferences.$formantEstimationEnabled) {
+                        Text("Formant Estimation")
+                    }
+                    Text("Formants are measure of vocal resonance, which vary depending on the speaker and the vowel being spoken.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+            }
         }
     }
 

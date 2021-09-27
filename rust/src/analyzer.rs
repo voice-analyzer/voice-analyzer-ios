@@ -2,7 +2,7 @@ use std::iter;
 use std::ops::RangeInclusive;
 
 use crate::resample::BufferedResampler;
-use crate::{AnalyzerOutput, Pitch, PitchEstimationAlgorithm, yin};
+use crate::{AnalyzerOutput, FormantEstimationAlgorithm, Pitch, PitchEstimationAlgorithm, yin};
 
 use formants::FormantAnalyzer;
 use irapt::Irapt;
@@ -20,7 +20,7 @@ pub struct Analyzer {
     downsampled_rate: f64,
     downsampler:      BufferedResampler,
     pitch_analyzer:   PitchAnalyzer,
-    formant_analyzer: FormantAnalyzer,
+    formant_analyzer: Option<FormantAnalyzer>,
 }
 
 enum PitchAnalyzer {
@@ -29,7 +29,11 @@ enum PitchAnalyzer {
 }
 
 impl Analyzer {
-    pub fn new(sample_rate: f64, pitch_estimation_algorithm: PitchEstimationAlgorithm) -> Self {
+    pub fn new(
+        sample_rate: f64,
+        pitch_estimation_algorithm: PitchEstimationAlgorithm,
+        formant_estimation_algorithm: FormantEstimationAlgorithm,
+    ) -> Self {
         let downsample_ratio = (sample_rate / TARGET_DOWNSAMPLED_RATE).round() as u8;
         let downsampled_rate = sample_rate / f64::from(downsample_ratio);
         let downsampler = BufferedResampler::new(f64::from(downsample_ratio).recip()).unwrap();
@@ -42,7 +46,11 @@ impl Analyzer {
             PitchEstimationAlgorithm::Yin => PitchAnalyzer::Yin,
         };
 
-        let formant_analyzer = FormantAnalyzer::new(FORMANTS_LPC_LENGTH, (2.5 + downsampled_rate / 1000.0) as u32);
+        let formant_analyzer = match formant_estimation_algorithm {
+            FormantEstimationAlgorithm::LibFormants =>
+                Some(FormantAnalyzer::new(FORMANTS_LPC_LENGTH, (2.5 + downsampled_rate / 1000.0) as u32)),
+            FormantEstimationAlgorithm::None => None,
+        };
 
         Self {
             downsampled_rate,
@@ -71,11 +79,12 @@ impl Analyzer {
             }
         };
 
-        let formant_analyzer = &mut self.formant_analyzer;
+        let formant_analyzer = self.formant_analyzer.as_mut();
         let downsampled_rate = self.downsampled_rate;
         pitch.map(|pitch| {
-            let formants = formant_analyzer
-                .analyze(downsampled.make_contiguous(), downsampled_rate as f32, FORMANTS_SAFETY_MARGIN);
+            let formants = formant_analyzer.map(|formant_analyzer| {
+                formant_analyzer.analyze(downsampled.make_contiguous(), downsampled_rate as f32, FORMANTS_SAFETY_MARGIN)
+            });
             AnalyzerOutput::new(pitch, formants)
         })
     }

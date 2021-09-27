@@ -19,6 +19,7 @@ public class VoiceRecordingModel: ObservableObject {
         var analyzer: Analyzer? = nil
         var sampleRate: Float64? = nil
         var pitchEstimationAlgorithm: PitchEstimationAlgorithm? = nil
+        var formantEstimationAlgorithm: FormantEstimationAlgorithm? = nil
     }
 
     struct RecordingFileState {
@@ -184,6 +185,8 @@ public class VoiceRecordingModel: ObservableObject {
         case .Yin:   pitchEstimationAlgorithm = PitchEstimationAlgorithm.Yin
         }
 
+        let formantEstimationAlgorithm = env.preferences.formantEstimationEnabled ? FormantEstimationAlgorithm.LibFormants : .None
+
         if pitchEstimationAlgorithm != self.recordingState?.pitchEstimationAlgorithm {
             if let oldPitchEstimationAlgorithm = self.recordingState?.pitchEstimationAlgorithm {
                 os_log("pitch estimation algorithm changed from %d to %d",
@@ -194,13 +197,24 @@ public class VoiceRecordingModel: ObservableObject {
             self.recordingState?.pitchEstimationAlgorithm = pitchEstimationAlgorithm
         }
 
+        if formantEstimationAlgorithm != self.recordingState?.formantEstimationAlgorithm {
+            if let oldFormantEstimationAlgorithm = self.recordingState?.formantEstimationAlgorithm {
+                os_log("formant estimation algorithm changed from %d to %d",
+                       oldFormantEstimationAlgorithm.rawValue,
+                       formantEstimationAlgorithm.rawValue)
+            }
+            self.recordingState?.analyzer = nil
+            self.recordingState?.formantEstimationAlgorithm = formantEstimationAlgorithm
+        }
+
         let analyzer = self.recordingState?.analyzer ?? {
             os_log("starting analyzer with pitch estimation algorithm %d and sample rate %f",
                    pitchEstimationAlgorithm.rawValue,
                    buffer.format.sampleRate)
             return Analyzer(
                 sampleRate: buffer.format.sampleRate,
-                pitchEstimationAlgorithm: pitchEstimationAlgorithm
+                pitchEstimationAlgorithm: pitchEstimationAlgorithm,
+                formantEstimationAlgorithm: formantEstimationAlgorithm
             )
         }()
         self.recordingState?.analyzer = analyzer

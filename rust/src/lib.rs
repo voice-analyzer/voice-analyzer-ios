@@ -27,6 +27,12 @@ pub enum PitchEstimationAlgorithm {
 }
 
 #[repr(C)]
+pub enum FormantEstimationAlgorithm {
+    None,
+    LibFormants,
+}
+
+#[repr(C)]
 #[derive(Clone, Copy, Default)]
 pub struct AnalyzerOutput {
     pub pitch:    Pitch,
@@ -51,9 +57,14 @@ pub struct Formant {
 pub extern "C" fn voice_analyzer_rust_analyzer_new(
     sample_rate: f64,
     pitch_estimation_algorithm: PitchEstimationAlgorithm,
+    formant_estimation_algorithm: FormantEstimationAlgorithm,
 ) -> *mut AnalyzerState {
     logger::set_logger();
-    Box::into_raw(Box::new(AnalyzerState(Analyzer::new(sample_rate, pitch_estimation_algorithm))))
+    Box::into_raw(Box::new(AnalyzerState(Analyzer::new(
+        sample_rate,
+        pitch_estimation_algorithm,
+        formant_estimation_algorithm,
+    ))))
 }
 
 #[no_mangle]
@@ -83,9 +94,10 @@ pub extern "C" fn voice_analyzer_rust_analyzer_drop(mut p_analyzer: Option<NonNu
 //
 
 impl AnalyzerOutput {
-    pub fn new(pitch: Pitch, formants: formants::Formants) -> Self {
+    pub fn new(pitch: Pitch, formants: Option<formants::Formants>) -> Self {
         let formants = formants
             .iter()
+            .flat_map(AsRef::as_ref)
             .filter(|formant| formant.frequency.is_normal())
             .filter(|formant| formant.frequency > pitch.value * 1.5)
             .map(|formant| Formant {
