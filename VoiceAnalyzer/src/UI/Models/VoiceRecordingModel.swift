@@ -2,15 +2,45 @@ import os
 import AVFoundation
 
 public struct AnalysisFrame {
-    var pitch: Pitch?
-    var formants: [Formant]
+    var time: Float
+    var pitchFrequency: Float
+    var pitchConfidence: Float
+    var firstFormantFrequency: Float?
+    var secondFormantFrequency: Float?
+
+    var formantFrequencies: [Float] {
+        [firstFormantFrequency, secondFormantFrequency].compactMap { $0 }
+    }
+
+    var databaseRecord: DatabaseRecords.AnalysisFrame {
+        DatabaseRecords.AnalysisFrame(
+            analysisId: -1,
+            time: time,
+            pitchFrequency: pitchFrequency,
+            pitchConfidence: pitchConfidence,
+            firstFormantFrequency: firstFormantFrequency,
+            secondFormantFrequency: secondFormantFrequency
+        )
+    }
+
+    static func from(databaseRecord: DatabaseRecords.AnalysisFrame) -> Self? {
+        guard let pitchFrequency = databaseRecord.pitchFrequency else { return nil }
+        guard let pitchConfidence = databaseRecord.pitchConfidence else { return nil }
+        return Self(
+            time: databaseRecord.time,
+            pitchFrequency: pitchFrequency,
+            pitchConfidence: pitchConfidence,
+            firstFormantFrequency: databaseRecord.firstFormantFrequency,
+            secondFormantFrequency: databaseRecord.secondFormantFrequency
+        )
+    }
 }
 
 public class VoiceRecordingModel: ObservableObject {
     static let CONFIDENCE_THRESHOLD: Float = 0.20
     static let HEADER_LENGTH: UInt = WaveHeader.encodedLength(dataFormat: .IEEEFloat)
 
-    @Published var frames: [AnalyzerOutput] = []
+    @Published var frames: [AnalysisFrame] = []
 
     struct RecordingState {
         let activity: AudioSession.Activity
@@ -109,11 +139,19 @@ public class VoiceRecordingModel: ObservableObject {
             return
         }
 
-        let recordingRecord = DatabaseRecords.Recording(
+        var recordingRecord = DatabaseRecords.Recording(
             timestamp: dateNow,
             length: Double(recordingFile.samples) / sampleRate,
             filename: destRecordingFileUrl.lastPathComponent,
             fileSize: Int64(recordingFileSize))
+
+        var analysisRecord = DatabaseRecords.Analysis(
+            recordingId: -1,
+            pitchEstimationAlgorithm: recordingState?.pitchEstimationAlgorithm.flatMap { $0.databaseRecord },
+            formantEstimationAlgorithm: recordingState?.formantEstimationAlgorithm.flatMap { $0.databaseRecord }
+        )
+
+        let analysisFrameRecords = frames.map { frame in frame.databaseRecord }
 
         let waveHeader = WaveHeader(
             dataLength: UInt32(recordingFileSize) - UInt32(Self.HEADER_LENGTH),
@@ -137,6 +175,12 @@ public class VoiceRecordingModel: ObservableObject {
 
         try env.databaseStorage.writer().write { db in
             try recordingRecord.insert(db)
+            analysisRecord.recordingId = recordingRecord.unwrappedId
+            try analysisRecord.insert(db)
+            for var analysisFrameRecord in analysisFrameRecords {
+                analysisFrameRecord.analysisId = analysisRecord.unwrappedId
+                try analysisFrameRecord.insert(db)
+            }
         }
         os_log("saved recording file: %@", destRecordingFileUrl.relativeString)
 
@@ -223,8 +267,16 @@ public class VoiceRecordingModel: ObservableObject {
             samples: buffer.floatChannelData!.pointee,
             samplesLen: UInt(buffer.frameLength))
         if output.pitch.confidence > Self.CONFIDENCE_THRESHOLD {
+            let timeInSeconds = Float(self.recordingFile?.samples ?? 0) / Float(buffer.format.sampleRate)
+            let frame = AnalysisFrame(
+                time: timeInSeconds,
+                pitchFrequency: output.pitch.value,
+                pitchConfidence: output.pitch.confidence,
+                firstFormantFrequency: nonZeroFloat(output.formants.0.frequency),
+                secondFormantFrequency: nonZeroFloat(output.formants.1.frequency)
+            )
             DispatchQueue.main.async {
-                self.frames.append(output)
+                self.frames.append(frame)
             }
         }
     }
@@ -249,6 +301,29 @@ public class VoiceRecordingModel: ObservableObject {
             } catch {
                 os_log("error writing to live recording file: %@", error.localizedDescription)
             }
+        }
+    }
+}
+
+private func nonZeroFloat(_ value: Float) -> Float? {
+    value.isZero ? nil : value
+}
+
+extension PitchEstimationAlgorithm {
+    var databaseRecord: DatabaseRecords.PitchEstimationAlgorithm? {
+        switch self {
+        case .Irapt: return .Irapt
+        case .Yin: return .Yin
+        default: return nil
+        }
+    }
+}
+
+extension FormantEstimationAlgorithm {
+    var databaseRecord: DatabaseRecords.FormantEstimationAlgorithm? {
+        switch self {
+        case .LibFormants: return .LibFormants
+        default: return nil
         }
     }
 }

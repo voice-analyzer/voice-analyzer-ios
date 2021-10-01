@@ -21,6 +21,9 @@
 		C83971F126EAB5E1003030DC /* RecordingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83971F026EAB5E1003030DC /* RecordingsView.swift */; };
 		C83971F326EABA24003030DC /* DatabaseQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83971F226EABA24003030DC /* DatabaseQuery.swift */; };
 		C864B3EB26DEE03600E5E0D3 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */; };
+		C867A2EA270798AB00FD79BD /* AnalysisFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2E9270798AB00FD79BD /* AnalysisFrame.swift */; };
+		C867A2EC27079E6B00FD79BD /* Analysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2EB27079E6B00FD79BD /* Analysis.swift */; };
+		C867A2EE2707B26800FD79BD /* RecordingPitchChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2ED2707B26800FD79BD /* RecordingPitchChart.swift */; };
 		C881ABFD266BFF7C006F83D4 /* VoiceAnalyzerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */; };
 		C881ABFF266BFF7C006F83D4 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFE266BFF7C006F83D4 /* ChartView.swift */; };
 		C881AC01266BFF7E006F83D4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C881AC00266BFF7E006F83D4 /* Images.xcassets */; };
@@ -52,6 +55,9 @@
 		C83971F026EAB5E1003030DC /* RecordingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsView.swift; sourceTree = "<group>"; };
 		C83971F226EABA24003030DC /* DatabaseQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseQuery.swift; sourceTree = "<group>"; };
 		C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
+		C867A2E9270798AB00FD79BD /* AnalysisFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisFrame.swift; sourceTree = "<group>"; };
+		C867A2EB27079E6B00FD79BD /* Analysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analysis.swift; sourceTree = "<group>"; };
+		C867A2ED2707B26800FD79BD /* RecordingPitchChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingPitchChart.swift; sourceTree = "<group>"; };
 		C881ABF9266BFF7C006F83D4 /* VoiceAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAnalyzerApp.swift; sourceTree = "<group>"; };
 		C881ABFE266BFF7C006F83D4 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
@@ -152,6 +158,8 @@
 			isa = PBXGroup;
 			children = (
 				C83971EC26EAAEB5003030DC /* Recording.swift */,
+				C867A2E9270798AB00FD79BD /* AnalysisFrame.swift */,
+				C867A2EB27079E6B00FD79BD /* Analysis.swift */,
 			);
 			path = Records;
 			sourceTree = "<group>";
@@ -207,6 +215,7 @@
 				C8E68C7126E2FBC5003662A9 /* LivePitchChart.swift */,
 				C83971F026EAB5E1003030DC /* RecordingsView.swift */,
 				C8DD7B1826EB11D000BFF562 /* AppView.swift */,
+				C867A2ED2707B26800FD79BD /* RecordingPitchChart.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -405,6 +414,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C82DB1FB26A357CB00B0A7FE /* AudioSession.swift in Sources */,
+				C867A2EA270798AB00FD79BD /* AnalysisFrame.swift in Sources */,
 				C827038B26F12F630035F482 /* VoicePlaybackModel.swift in Sources */,
 				C82DB1FE26A35AC800B0A7FE /* AppEnvironment.swift in Sources */,
 				C82DB1F926A3548600B0A7FE /* VoiceRecordingModel.swift in Sources */,
@@ -422,7 +432,9 @@
 				C8DD7B1D26EE970000BFF562 /* Comparable.swift in Sources */,
 				C8DD7B1B26EB18CF00BFF562 /* DatabaseQueryObserver.swift in Sources */,
 				C8DD7B1926EB11D000BFF562 /* AppView.swift in Sources */,
+				C867A2EC27079E6B00FD79BD /* Analysis.swift in Sources */,
 				C8E68C7226E2FBC5003662A9 /* LivePitchChart.swift in Sources */,
+				C867A2EE2707B26800FD79BD /* RecordingPitchChart.swift in Sources */,
 				C83971E726EA786C003030DC /* DatabaseStorage.swift in Sources */,
 				C864B3EB26DEE03600E5E0D3 /* AppPreferences.swift in Sources */,
 			);

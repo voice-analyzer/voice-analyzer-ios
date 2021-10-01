@@ -2,7 +2,7 @@ import SwiftUI
 import Charts
 
 struct ChartView: View {
-    @Binding var analysisFrames: [AnalyzerOutput]
+    let analysisFrames: [AnalysisFrame]
 
     var body: some View {
         PitchChart(analysisFrames: analysisFrames)

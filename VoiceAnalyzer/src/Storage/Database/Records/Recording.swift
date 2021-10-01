@@ -2,7 +2,7 @@ import Foundation
 import GRDB
 
 extension DatabaseRecords {
-    struct Recording: Codable, FetchableRecord, PersistableRecord {
+    struct Recording: Codable, FetchableRecord, MutablePersistableRecord {
         static let databaseDateEncodingStrategy = DatabaseDateEncodingStrategy.millisecondsSince1970
         static let databaseDateDecodingStrategy = DatabaseDateDecodingStrategy.millisecondsSince1970
 
@@ -12,6 +12,10 @@ extension DatabaseRecords {
         var length: Double
         var filename: String?
         var fileSize: Int64?
+
+        mutating func didInsert(with rowID: Int64, for column: String?) {
+            id = rowID
+        }
 
         var unwrappedId: Int64 { id! }
 

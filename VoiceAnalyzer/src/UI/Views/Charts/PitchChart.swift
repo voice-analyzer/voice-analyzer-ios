@@ -14,27 +14,24 @@ struct PitchChart: UIViewRepresentable {
     private let pitchData: [ChartDataEntry]
     private let formantsData: [[ChartDataEntry]]
 
-    init(analysisFrames: [AnalyzerOutput]) {
-        let voicedFrames: [(Pitch, [Formant])] = analysisFrames
-            .map { frame in (frame.pitch, [frame.formants.0, frame.formants.1]) }
-            .filter { pitch, _ in pitch.value > Float(Self.MINIMUM_PITCH) && pitch.value < Float(Self.MAXIMUM_PITCH) }
+    init(analysisFrames: [AnalysisFrame]) {
+        let voicedFrames: [AnalysisFrame] = analysisFrames
+            .filter { frame in frame.pitchFrequency > Float(Self.MINIMUM_PITCH) && frame.pitchFrequency < Float(Self.MAXIMUM_PITCH) }
 
-        let pitches: [Pitch] = voicedFrames.map { pitch, _ in pitch }
-        pitchData = pitches
+        pitchData = voicedFrames
             .enumerated()
-            .map { index, pitch in ChartDataEntry(x: Double(index), y: Self.convertHzToKey(Double(pitch.value))) }
-
-        let formants: [[Formant]] = voicedFrames.map { _, formants in formants }
+            .map { index, frame in ChartDataEntry(x: Double(index), y: Self.convertHzToKey(Double(frame.pitchFrequency))) }
 
         var formantsData: [[ChartDataEntry]] = []
-        for (frameIndex, frameFormants) in formants.enumerated() {
+        for (frameIndex, frame) in voicedFrames.enumerated() {
+            let frameFormants = frame.formantFrequencies
             if frameFormants.count > formantsData.count {
                 formantsData.append(contentsOf: Array(repeating: [], count: frameFormants.count - formantsData.count))
             }
             for (formantIndex, formant) in frameFormants.enumerated() {
-                if formant.frequency > Float(Self.MINIMUM_PITCH) && formant.frequency < Float(Self.MAXIMUM_PITCH) {
+                if formant > Float(Self.MINIMUM_PITCH) && formant < Float(Self.MAXIMUM_PITCH) {
                     formantsData[formantIndex]
-                        .append(ChartDataEntry(x: Double(frameIndex), y: Self.convertHzToKey(Double(formant.frequency))))
+                        .append(ChartDataEntry(x: Double(frameIndex), y: Self.convertHzToKey(Double(formant))))
                 }
             }
         }

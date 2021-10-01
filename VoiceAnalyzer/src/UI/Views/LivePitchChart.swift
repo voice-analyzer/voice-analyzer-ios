@@ -42,7 +42,7 @@ struct LivePitchChart: View {
     }
 
     var chartView: some View {
-        ChartView(analysisFrames: $voiceRecording.frames)
+        ChartView(analysisFrames: voiceRecording.frames)
     }
 
     var toolbarView: some View {

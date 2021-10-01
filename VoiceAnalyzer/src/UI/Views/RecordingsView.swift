@@ -81,8 +81,19 @@ struct RecordingsView: View {
     private func deleteRecordings(recordings: AnyCollection<DatabaseRecords.Recording>) {
         let ids = Array(recordings.compactMap { recording in recording.id })
         let filenames = Array(recordings.compactMap { recording in recording.filename })
-        env.databaseStorage.writer().asyncWrite { db in
-            try DatabaseRecords.Recording.deleteAll(db, keys: ids)
+        env.databaseStorage.writer().asyncWrite { db -> Int in
+            let deleted = try DatabaseRecords.Recording.deleteAll(db, keys: ids)
+            try DatabaseRecords.Analysis
+                .filter(ids.contains(DatabaseRecords.Analysis.Columns.recordingId))
+                .select(DatabaseRecords.Analysis.Columns.id, as: Int64.self)
+                .fetchCursor(db)
+                .forEach { analysisId in
+                    try DatabaseRecords.Analysis.deleteOne(db, key: analysisId)
+                    try DatabaseRecords.AnalysisFrame
+                        .filter(DatabaseRecords.AnalysisFrame.Columns.analysisId == analysisId)
+                        .deleteAll(db)
+                }
+            return deleted
         } completion: { db, result in
             switch result {
             case .success(let deleteCount):
@@ -117,6 +128,7 @@ private struct RecordingRow: View {
     @Environment(\.env) private var env: AppEnvironment
     @Environment(\.editMode) private var editMode: Binding<EditMode>?
     @State private var sliderPausedPlayback: Bool = false
+    @State private var pitchChartActive: Bool = false
 
     var formattedRecordingFileSize: String? {
         guard let byteCount = recording.fileSize else { return nil }
@@ -147,6 +159,11 @@ private struct RecordingRow: View {
             .foregroundColor(.secondary)
             .font(.subheadline)
 
+            NavigationLink(destination: RecordingPitchChart(recordingId: recording.unwrappedId), isActive: $pitchChartActive) {
+                EmptyView()
+            }
+            .hidden()
+
             if expanded {
                 expandedBody
                     .transition(
@@ -163,7 +180,7 @@ private struct RecordingRow: View {
     var expandedBody: some View {
         VStack(spacing: 25) {
             seekSlider
-            mediaButtons
+            buttonsRow
         }
         .padding(.top, 25)
         .padding(.bottom, 10)
@@ -180,6 +197,18 @@ private struct RecordingRow: View {
             .foregroundColor(.secondary)
             .font(.caption)
         }
+    }
+
+    var buttonsRow: some View {
+        ZStack(alignment: .center) {
+            mediaButtons
+            HStack {
+                Spacer()
+                viewDetailsButton
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+        .font(.system(size: 24))
     }
 
     var mediaButtons: some View {
@@ -212,8 +241,15 @@ private struct RecordingRow: View {
             }
             .imageScale(.medium)
         }
-        .buttonStyle(PlainButtonStyle())
-        .font(.system(size: 24))
+    }
+
+    var viewDetailsButton: some View {
+        Button {
+            pitchChartActive = true
+        } label: {
+            Image(systemName: "waveform")
+        }
+        .imageScale(.medium)
     }
 
     func seek(by seconds: Float) {
