@@ -20,6 +20,7 @@
 		C83971ED26EAAEB5003030DC /* Recording.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83971EC26EAAEB5003030DC /* Recording.swift */; };
 		C83971F126EAB5E1003030DC /* RecordingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83971F026EAB5E1003030DC /* RecordingsView.swift */; };
 		C83971F326EABA24003030DC /* DatabaseQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83971F226EABA24003030DC /* DatabaseQuery.swift */; };
+		C849A2A3270CFE9C00EA3180 /* VoicePlaybackSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C849A2A2270CFE9C00EA3180 /* VoicePlaybackSlider.swift */; };
 		C864B3EB26DEE03600E5E0D3 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */; };
 		C867A2EA270798AB00FD79BD /* AnalysisFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2E9270798AB00FD79BD /* AnalysisFrame.swift */; };
 		C867A2EC27079E6B00FD79BD /* Analysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2EB27079E6B00FD79BD /* Analysis.swift */; };
@@ -54,6 +55,7 @@
 		C83971EC26EAAEB5003030DC /* Recording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recording.swift; sourceTree = "<group>"; };
 		C83971F026EAB5E1003030DC /* RecordingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsView.swift; sourceTree = "<group>"; };
 		C83971F226EABA24003030DC /* DatabaseQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseQuery.swift; sourceTree = "<group>"; };
+		C849A2A2270CFE9C00EA3180 /* VoicePlaybackSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicePlaybackSlider.swift; sourceTree = "<group>"; };
 		C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
 		C867A2E9270798AB00FD79BD /* AnalysisFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisFrame.swift; sourceTree = "<group>"; };
 		C867A2EB27079E6B00FD79BD /* Analysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analysis.swift; sourceTree = "<group>"; };
@@ -164,6 +166,14 @@
 			path = Records;
 			sourceTree = "<group>";
 		};
+		C849A2A1270CFE8100EA3180 /* Controls */ = {
+			isa = PBXGroup;
+			children = (
+				C849A2A2270CFE9C00EA3180 /* VoicePlaybackSlider.swift */,
+			);
+			path = Controls;
+			sourceTree = "<group>";
+		};
 		C881ABF0266BFF7C006F83D4 = {
 			isa = PBXGroup;
 			children = (
@@ -209,6 +219,7 @@
 		C8D986B9266CD0DE00228FB3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C849A2A1270CFE8100EA3180 /* Controls */,
 				C8D986BB266DAE9300228FB3 /* Charts */,
 				C881ABFE266BFF7C006F83D4 /* ChartView.swift */,
 				C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */,
@@ -419,6 +430,7 @@
 				C82DB1FE26A35AC800B0A7FE /* AppEnvironment.swift in Sources */,
 				C82DB1F926A3548600B0A7FE /* VoiceRecordingModel.swift in Sources */,
 				C8E68C6B26E28B98003662A9 /* Lib.swift in Sources */,
+				C849A2A3270CFE9C00EA3180 /* VoicePlaybackSlider.swift in Sources */,
 				C881ABFF266BFF7C006F83D4 /* ChartView.swift in Sources */,
 				C83971F126EAB5E1003030DC /* RecordingsView.swift in Sources */,
 				C83971ED26EAAEB5003030DC /* Recording.swift in Sources */,

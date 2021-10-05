@@ -9,6 +9,7 @@ struct RecordingPitchChart: View {
 
     @ObservedObject var playback: VoicePlaybackModel
     @State var highlightedFrameIndex: UInt?
+    @State var sliderPausedPlayback: Bool = false
 
     struct Analysis {
         var analysis: DatabaseRecords.Analysis
@@ -32,6 +33,7 @@ struct RecordingPitchChart: View {
             geometry in
             VStack(spacing: 0) {
                 chartView
+                playbackSliderView
                 Divider()
                 ZStack {
                     toolbarView
@@ -60,6 +62,12 @@ struct RecordingPitchChart: View {
                 }
             }
         )
+    }
+
+    var playbackSliderView: some View {
+        VoicePlaybackSlider(playback: playback, pausedPlayback: $sliderPausedPlayback, recordingLength: Float(recording?.length ?? 0))
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
     }
 
     var toolbarView: some View {
@@ -100,7 +108,7 @@ struct RecordingPitchChart: View {
                 os_log("error toggling recording: %@", error.localizedDescription)
             }
         }) {
-            Image(systemName: playback.isPlaying ? "pause" : "play")
+            Image(systemName: playback.isPlaying || sliderPausedPlayback ? "pause" : "play")
         }
     }
 
