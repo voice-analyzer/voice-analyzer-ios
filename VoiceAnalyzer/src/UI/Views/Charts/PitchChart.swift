@@ -53,6 +53,7 @@ struct PitchChart: UIViewRepresentable {
         chart.leftAxis.addLimitLine(ChartLimitLine(limit: Self.convertHzToKey(Self.PITCH_C3), label: "C3"))
         chart.leftAxis.addLimitLine(ChartLimitLine(limit: Self.convertHzToKey(Self.PITCH_C4), label: "C4"))
         chart.leftAxis.drawLimitLinesBehindDataEnabled = true
+        chart.leftAxis.labelCount = 8
         chart.rightAxis.enabled = false
         if let highlighter = chart.highlighter {
             chart.highlighter = HighlighterProxy(highlighter: highlighter, coordinator: context.coordinator)
