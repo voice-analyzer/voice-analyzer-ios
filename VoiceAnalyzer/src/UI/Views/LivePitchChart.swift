@@ -24,7 +24,7 @@ struct LivePitchChart: View {
                 .frame(height: 44 + geometry.safeAreaInsets.bottom, alignment: .top)
                 .background(Color(UIColor.secondarySystemBackground))
             }
-            .ignoresSafeArea(.container, edges: .bottom)
+            .ignoresSafeArea(.all, edges: .bottom)
             .navigationBarTitle("Pitch Estimation")
             .navigationBarTitleDisplayMode(.inline)
         }

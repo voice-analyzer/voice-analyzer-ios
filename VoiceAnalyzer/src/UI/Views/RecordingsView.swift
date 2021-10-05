@@ -143,6 +143,20 @@ private struct RecordingRow: View {
     @Environment(\.env) private var env: AppEnvironment
     @Environment(\.editMode) private var editMode: Binding<EditMode>?
     @State private var sliderPausedPlayback: Bool = false
+    @State private var name: String
+    private let initialName: String
+
+    private var isExpanded: Bool {
+        if case .expanded(_) = expanded { return true } else { return false }
+    }
+
+    init(recording: DatabaseRecords.Recording, expanded: ExpansionState, playback: VoicePlaybackModel) {
+        self.recording = recording
+        self.expanded = expanded
+        self.playback = playback
+        initialName = recording.name ?? "Untitled Recording"
+        _name = State(initialValue: initialName)
+    }
 
     var formattedRecordingFileSize: String? {
         guard let byteCount = recording.fileSize else { return nil }
@@ -154,8 +168,15 @@ private struct RecordingRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack {
-                Text(recording.name ?? "Untitled Recording")
-                    .font(.headline)
+                TextField(initialName, text: $name) { _ in } onCommit: {
+                    if !name.isEmpty && name != initialName {
+                        commitName()
+                    } else {
+                        name = initialName
+                    }
+                }
+                .font(.headline)
+                .disabled(!isExpanded)
                 if editMode?.wrappedValue == .active {
                     if let formattedRecordingFileSize = formattedRecordingFileSize {
                         Spacer()
@@ -175,7 +196,7 @@ private struct RecordingRow: View {
 
             if case .expanded(let expandedState) = expanded {
                 NavigationLink(
-                    destination: RecordingPitchChart(recordingId: recording.unwrappedId, playback: playback),
+                    destination: RecordingPitchChart(recording: recording, playback: playback),
                     isActive: expandedState.$pitchChartActive
                 ) {
                     EmptyView()
@@ -266,6 +287,21 @@ private struct RecordingRow: View {
         let seekTime = (playback.currentTime + seconds).clamped(0...Float(recording.length))
         if seekTime < Float(recording.length) - 0.25 {
             playback.currentTime = seekTime
+        }
+    }
+
+    func commitName() {
+        var newRecording = recording
+        newRecording.name = name
+        env.databaseStorage.writer().asyncWrite { db in
+            try newRecording.update(db)
+        } completion: { db, result in
+            switch result {
+            case .success(_):
+                os_log("updated recording name")
+            case .failure(let error):
+                os_log("error updating recording name in database: %@", error.localizedDescription)
+            }
         }
     }
 }

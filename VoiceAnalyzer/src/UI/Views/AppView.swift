@@ -45,7 +45,7 @@ struct AppView: View {
                     .transition(.move(edge: .bottom))
                 }
             }
-            .ignoresSafeArea(.container, edges: .bottom)
+            .ignoresSafeArea(.all, edges: .bottom)
         }
     }
 

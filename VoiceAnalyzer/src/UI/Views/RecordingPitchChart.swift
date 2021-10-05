@@ -20,12 +20,21 @@ struct RecordingPitchChart: View {
     @DatabaseQuery private var recording: DatabaseRecords.Recording?
     @DatabaseQuery private var analysis: Analysis?
 
-    init(recordingId: Int64, playback: VoicePlaybackModel) {
+    init(recording: DatabaseRecords.Recording, playback: VoicePlaybackModel) {
+        let recordingId = recording.unwrappedId
         self.recordingId = recordingId
         self.playback = playback
 
-        _recording = DatabaseQuery(wrappedValue: nil) { db in try Self.queryRecording(db: db, recordingId: recordingId) }
+        _recording = DatabaseQuery(wrappedValue: recording) { db in try Self.queryRecording(db: db, recordingId: recordingId) }
         _analysis = DatabaseQuery(wrappedValue: nil) { db in try Self.queryAnalysis(db: db, recordingId: recordingId) }
+    }
+
+    var navigationBarTitle: String {
+        if let recording = recording {
+            return recording.name ?? "Untitled Recording"
+        } else {
+            return ""
+        }
     }
 
     var body: some View {
@@ -41,8 +50,8 @@ struct RecordingPitchChart: View {
                 .frame(height: 44 + geometry.safeAreaInsets.bottom, alignment: .top)
                 .background(Color(UIColor.secondarySystemBackground))
             }
-            .ignoresSafeArea(.container, edges: .bottom)
-            .navigationBarTitle(recording?.name ?? "Untitled Recording")
+            .ignoresSafeArea(.all, edges: .bottom)
+            .navigationBarTitle(navigationBarTitle)
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: playback.currentTime) { currentTime in updateHighlightedFrame(currentTime: currentTime) }
             .onChange(of: analysis?.frames.count) { _ in updateHighlightedFrame() }
