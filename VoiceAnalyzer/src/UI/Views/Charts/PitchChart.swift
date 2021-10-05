@@ -4,6 +4,8 @@ import Charts
 struct PitchChart: UIViewRepresentable {
     typealias UIViewType = LineChartView
 
+    @Binding var highlightedFrameIndex: UInt?
+
     static let PITCH_A0 = 27.5
     static let PITCH_C3 = 130.8
     static let PITCH_C4 = 261.6
@@ -14,7 +16,9 @@ struct PitchChart: UIViewRepresentable {
     private let pitchData: [ChartDataEntry]
     private let formantsData: [[ChartDataEntry]]
 
-    init(analysisFrames: [AnalysisFrame]) {
+    init(analysisFrames: [AnalysisFrame], highlightedFrameIndex: Binding<UInt?>) {
+        _highlightedFrameIndex = highlightedFrameIndex
+
         let voicedFrames: [AnalysisFrame] = analysisFrames
             .filter { frame in frame.pitchFrequency > Float(Self.MINIMUM_PITCH) && frame.pitchFrequency < Float(Self.MAXIMUM_PITCH) }
 
@@ -50,6 +54,9 @@ struct PitchChart: UIViewRepresentable {
         chart.leftAxis.addLimitLine(ChartLimitLine(limit: Self.convertHzToKey(Self.PITCH_C4), label: "C4"))
         chart.leftAxis.drawLimitLinesBehindDataEnabled = true
         chart.rightAxis.enabled = false
+        if let highlighter = chart.highlighter {
+            chart.highlighter = HighlighterProxy(highlighter: highlighter, coordinator: context.coordinator)
+        }
 
         updateDataSet(chart: chart)
         return chart
@@ -57,6 +64,11 @@ struct PitchChart: UIViewRepresentable {
 
     func updateUIView(_ chart: UIViewType, context: Context) {
         updateDataSet(chart: chart)
+        if let highlightedFrameIndex = highlightedFrameIndex {
+            chart.highlightValue(x: Double(highlightedFrameIndex), dataSetIndex: 0, callDelegate: false)
+        } else {
+            chart.highlightValue(nil)
+        }
         chart.notifyDataSetChanged()
     }
 
@@ -93,6 +105,38 @@ struct PitchChart: UIViewRepresentable {
         }
 
         chart.data = LineChartData(dataSets: dataSets)
+    }
+
+    class HighlighterProxy: IHighlighter {
+        let highlighter: IHighlighter
+        let coordinator: Coordinator
+
+        init(highlighter: IHighlighter, coordinator: Coordinator) {
+            self.highlighter = highlighter
+            self.coordinator = coordinator
+        }
+
+        func getHighlight(x: CGFloat, y: CGFloat) -> Highlight? {
+            let highlight = highlighter.getHighlight(x: x, y: y)
+            coordinator.highlightChanged(highlight: highlight)
+            return highlight
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(self)
+    }
+
+    class Coordinator: NSObject {
+        let chart: PitchChart
+
+        init(_ chart: PitchChart) {
+            self.chart = chart
+        }
+
+        func highlightChanged(highlight: Highlight?) {
+            chart.highlightedFrameIndex = highlight.map { UInt($0.x) }
+        }
     }
 }
 

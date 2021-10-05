@@ -10,6 +10,7 @@ struct LivePitchChart: View {
 
     @State private var isRecording = false
     @State private var preferencesIsPresented = false
+    @State private var highlightedFrameIndex: UInt? = nil
 
     var body: some View {
         GeometryReader {
@@ -42,7 +43,7 @@ struct LivePitchChart: View {
     }
 
     var chartView: some View {
-        ChartView(analysisFrames: voiceRecording.frames)
+        ChartView(analysisFrames: voiceRecording.frames, highlightedFrameIndex: $highlightedFrameIndex)
     }
 
     var toolbarView: some View {
@@ -62,6 +63,7 @@ struct LivePitchChart: View {
                 clearButton
             }
         }
+        .font(.system(size: 18))
         .imageScale(.large)
         .padding(.horizontal, 16)
         .frame(height: 44)

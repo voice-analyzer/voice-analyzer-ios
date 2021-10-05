@@ -10,16 +10,19 @@ struct RecordingsView: View {
     @DatabaseQuery(Self.queryAllRecordings) private var recordings: [DatabaseRecords.Recording] = []
     @State private var selectedRecordingIndices: Set<Int> = Set()
     @State private var expandedRecordingIndex: Int?
+    @State private var pitchChartActive: Bool = false
 
     var body: some View {
         List(selection: $selectedRecordingIndices) {
             ForEach(Array(recordings.enumerated()), id: \.1.unwrappedId) { (index, recording) in
-                let expanded = index == expandedRecordingIndex
+                let expanded: RecordingRow.ExpansionState = index == expandedRecordingIndex ?
+                    .expanded(RecordingRow.ExpandedState(pitchChartActive: $pitchChartActive)) :
+                    .collapsed
                 RecordingRow(recording: recording, expanded: expanded, playback: playback)
                     .tag(index)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        if !expanded, editMode?.wrappedValue != .active {
+                        if case .collapsed = expanded, editMode?.wrappedValue != .active {
                             expandedRecordingIndex = index
                         }
                     }
@@ -32,7 +35,9 @@ struct RecordingsView: View {
         .navigationBarTitle("Recordings")
         .onDisappear {
             editMode?.wrappedValue = .inactive
-            expandedRecordingIndex = nil
+            if !pitchChartActive {
+                playback.pausePlayback(env: env)
+            }
         }
         .toolbar {
             ToolbarItemGroup(placement: .bottomBar) {
@@ -55,6 +60,7 @@ struct RecordingsView: View {
         .onChange(of: expandedRecordingIndex) { [expandedRecordingIndex] newExpandedRecordingIndex in
             if newExpandedRecordingIndex != expandedRecordingIndex {
                 playback.stopPlayback(env: env)
+                playback.currentTime = 0
             }
         }
     }
@@ -121,14 +127,22 @@ struct RecordingsView: View {
 }
 
 private struct RecordingRow: View {
+    enum ExpansionState {
+        case collapsed
+        case expanded(ExpandedState)
+    }
+
+    struct ExpandedState {
+        @Binding var pitchChartActive: Bool
+    }
+
     let recording: DatabaseRecords.Recording
-    let expanded: Bool
+    let expanded: ExpansionState
     @ObservedObject var playback: VoicePlaybackModel
 
     @Environment(\.env) private var env: AppEnvironment
     @Environment(\.editMode) private var editMode: Binding<EditMode>?
     @State private var sliderPausedPlayback: Bool = false
-    @State private var pitchChartActive: Bool = false
 
     var formattedRecordingFileSize: String? {
         guard let byteCount = recording.fileSize else { return nil }
@@ -159,12 +173,15 @@ private struct RecordingRow: View {
             .foregroundColor(.secondary)
             .font(.subheadline)
 
-            NavigationLink(destination: RecordingPitchChart(recordingId: recording.unwrappedId), isActive: $pitchChartActive) {
-                EmptyView()
-            }
-            .hidden()
+            if case .expanded(let expandedState) = expanded {
+                NavigationLink(
+                    destination: RecordingPitchChart(recordingId: recording.unwrappedId, playback: playback),
+                    isActive: expandedState.$pitchChartActive
+                ) {
+                    EmptyView()
+                }
+                .hidden()
 
-            if expanded {
                 expandedBody
                     .transition(
                         .asymmetric(
@@ -245,7 +262,9 @@ private struct RecordingRow: View {
 
     var viewDetailsButton: some View {
         Button {
-            pitchChartActive = true
+            if case .expanded(let expandedState) = expanded {
+                expandedState.pitchChartActive = true
+            }
         } label: {
             Image(systemName: "waveform")
         }
