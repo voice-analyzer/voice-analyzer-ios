@@ -48,7 +48,7 @@ RUST_TARGETS = $(strip $(if $(RUST_ARCHS), \
 	$(RUST_ALL_TARGETS) \
 ))
 
-ifeq ($(CONFIGURATION),Release)
+ifeq ($(CONFIGURATION),App Store Release)
 RUST_CONFIGURATION = release
 RUST_CONFIGURATION_FLAG = --release
 else ifeq ($(strip $(filter-out Debug,$(CONFIGURATION))),)
@@ -109,7 +109,7 @@ help:
 	@echo
 	@echo "Environment variables:"
 	@echo "  ARCHS         -- architectures to build for (x86_64, arm64)"
-	@echo "  CONFIGURATION -- build configuration (Release, Debug)"
+	@echo "  CONFIGURATION -- build configuration (App Store Release, Debug)"
 	@echo "  PLATFORM_NAME -- platform to build for (iphoneos, iphonesimulator, macosx)"
 
 .PHONY: submodules
