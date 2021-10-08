@@ -10,6 +10,8 @@ struct PitchChart: UIViewRepresentable {
     static let PITCH_C3 = 130.8
     static let PITCH_C4 = 261.6
 
+    private static let LINE_WIDTH = 3.0
+
     private static let MINIMUM_PITCH = 55.0
     private static let MAXIMUM_PITCH = 1760.0
 
@@ -82,6 +84,7 @@ struct PitchChart: UIViewRepresentable {
             pitchDataSet.drawCirclesEnabled = false
             pitchDataSet.drawValuesEnabled = false
             pitchDataSet.drawIconsEnabled = false
+            pitchDataSet.lineWidth = Self.LINE_WIDTH
             pitchDataSet.mode = .horizontalBezier
             dataSets.append(pitchDataSet)
         }
@@ -92,6 +95,7 @@ struct PitchChart: UIViewRepresentable {
             formantDataSet.drawValuesEnabled = false
             formantDataSet.drawIconsEnabled = false
             formantDataSet.mode = .horizontalBezier
+            formantDataSet.lineWidth = Self.LINE_WIDTH
             formantDataSet.setColor(.systemYellow)
             dataSets.append(formantDataSet)
         }
