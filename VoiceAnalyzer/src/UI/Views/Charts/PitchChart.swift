@@ -55,9 +55,7 @@ struct PitchChart: UIViewRepresentable {
         chart.leftAxis.drawLimitLinesBehindDataEnabled = true
         chart.leftAxis.labelCount = 8
         chart.rightAxis.enabled = false
-        if let highlighter = chart.highlighter {
-            chart.highlighter = HighlighterProxy(highlighter: highlighter, coordinator: context.coordinator)
-        }
+        chart.delegate = context.coordinator
 
         updateDataSet(chart: chart)
         return chart
@@ -108,35 +106,19 @@ struct PitchChart: UIViewRepresentable {
         chart.data = LineChartData(dataSets: dataSets)
     }
 
-    class HighlighterProxy: IHighlighter {
-        let highlighter: IHighlighter
-        let coordinator: Coordinator
-
-        init(highlighter: IHighlighter, coordinator: Coordinator) {
-            self.highlighter = highlighter
-            self.coordinator = coordinator
-        }
-
-        func getHighlight(x: CGFloat, y: CGFloat) -> Highlight? {
-            let highlight = highlighter.getHighlight(x: x, y: y)
-            coordinator.highlightChanged(highlight: highlight)
-            return highlight
-        }
-    }
-
     func makeCoordinator() -> Coordinator {
         return Coordinator(self)
     }
 
-    class Coordinator: NSObject {
+    class Coordinator: NSObject, ChartViewDelegate {
         let chart: PitchChart
 
         init(_ chart: PitchChart) {
             self.chart = chart
         }
 
-        func highlightChanged(highlight: Highlight?) {
-            chart.highlightedFrameIndex = highlight.map { UInt($0.x) }
+        func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
+            chart.highlightedFrameIndex = UInt(entry.x)
         }
     }
 }
