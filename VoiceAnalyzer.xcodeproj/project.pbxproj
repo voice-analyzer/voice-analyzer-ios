@@ -682,7 +682,7 @@
 				C881AC1D266BFF7E006F83D4 /* App Store Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = "App Store Release";
+			defaultConfigurationName = Debug;
 		};
 		C881AC1E266BFF7E006F83D4 /* Build configuration list for PBXNativeTarget "VoiceAnalyzer" */ = {
 			isa = XCConfigurationList;
@@ -691,7 +691,7 @@
 				C881AC20266BFF7E006F83D4 /* App Store Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = "App Store Release";
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 
