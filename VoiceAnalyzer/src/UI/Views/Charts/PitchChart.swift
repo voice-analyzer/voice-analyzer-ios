@@ -85,6 +85,7 @@ struct PitchChart: UIViewRepresentable {
             pitchDataSet.drawValuesEnabled = false
             pitchDataSet.drawIconsEnabled = false
             pitchDataSet.lineWidth = Self.LINE_WIDTH
+            pitchDataSet.setColor(UIColor(Color.accentColor))
             pitchDataSet.mode = .horizontalBezier
             dataSets.append(pitchDataSet)
         }

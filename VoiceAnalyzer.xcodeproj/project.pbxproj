@@ -28,7 +28,7 @@
 		C867A2EE2707B26800FD79BD /* RecordingPitchChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2ED2707B26800FD79BD /* RecordingPitchChart.swift */; };
 		C881ABFD266BFF7C006F83D4 /* VoiceAnalyzerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */; };
 		C881ABFF266BFF7C006F83D4 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C881ABFE266BFF7C006F83D4 /* ChartView.swift */; };
-		C881AC01266BFF7E006F83D4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C881AC00266BFF7E006F83D4 /* Images.xcassets */; };
+		C881AC01266BFF7E006F83D4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C881AC00266BFF7E006F83D4 /* Assets.xcassets */; };
 		C8D67BDD26DBF8A200DBAB13 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */; };
 		C8D986BD266DAEAF00228FB3 /* PitchChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D986BC266DAEAF00228FB3 /* PitchChart.swift */; };
 		C8DD7B1926EB11D000BFF562 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DD7B1826EB11D000BFF562 /* AppView.swift */; };
@@ -65,7 +65,7 @@
 		C881ABF9266BFF7C006F83D4 /* VoiceAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C881ABFC266BFF7C006F83D4 /* VoiceAnalyzerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAnalyzerApp.swift; sourceTree = "<group>"; };
 		C881ABFE266BFF7C006F83D4 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
-		C881AC00266BFF7E006F83D4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		C881AC00266BFF7E006F83D4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C881AC05266BFF7E006F83D4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C8D67BDC26DBF8A200DBAB13 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		C8D986BC266DAEAF00228FB3 /* PitchChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchChart.swift; sourceTree = "<group>"; };
@@ -200,7 +200,7 @@
 			children = (
 				C83971E826EA947C003030DC /* res */,
 				C8D986B8266CCBE300228FB3 /* src */,
-				C881AC00266BFF7E006F83D4 /* Images.xcassets */,
+				C881AC00266BFF7E006F83D4 /* Assets.xcassets */,
 				C881AC05266BFF7E006F83D4 /* Info.plist */,
 			);
 			path = VoiceAnalyzer;
@@ -355,7 +355,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C881AC01266BFF7E006F83D4 /* Images.xcassets in Resources */,
+				C881AC01266BFF7E006F83D4 /* Assets.xcassets in Resources */,
 				C866033727164E6C0062DC36 /* Settings.bundle in Resources */,
 				C83971EA26EA9494003030DC /* schema.sql in Resources */,
 			);
@@ -635,7 +635,7 @@
 			baseConfigurationReference = 43B928FDA7E004FEDE0DF263 /* Pods-VoiceAnalyzer.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Primary;
 				CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW = YES;
 				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
@@ -670,7 +670,7 @@
 			baseConfigurationReference = 2DB5491B3C3C7451EB7AC00C /* Pods-VoiceAnalyzer.app store release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Primary;
 				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
