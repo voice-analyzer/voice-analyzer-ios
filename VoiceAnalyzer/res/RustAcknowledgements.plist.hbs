@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>PreferenceSpecifiers</key>
+    <array>
+      <dict>
+        <key>FooterText</key>
+        <string>This application makes use of third party Rust crates with the following licenses:</string>
+        <key>Title</key>
+        <string>Acknowledgements</string>
+        <key>Type</key>
+        <string>PSGroupSpecifier</string>
+      </dict>
+      {{~#each licenses}}
+      <dict>
+        <key>FooterText</key>
+        <string>Used by:
+{{#each used_by}}{{crate.name}} ({{#if crate.repository}}{{crate.repository}}{{else}}https://crates.io/crates/{{crate.name}}{{/if}})
+{{/each}}
+
+{{text~}}
+        </string>
+        <key>Title</key>
+        <string>{{name}}</string>
+        <key>Type</key>
+        <string>PSGroupSpecifier</string>
+      </dict>
+      {{~/each}}
+      <dict>
+        <key>FooterText</key>
+        <string>End of Licenses</string>
+        <key>Title</key>
+        <string></string>
+        <key>Type</key>
+        <string>PSGroupSpecifier</string>
+      </dict>
+    </array>
+  </dict>
+</plist>

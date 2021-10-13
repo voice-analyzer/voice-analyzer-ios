@@ -12,6 +12,13 @@ CONFIGURATION ?=
 
 CARGO ?= cargo
 LIPO ?= lipo
+LICENSE_PLIST ?= license-plist
+
+#
+# path variables
+#
+
+resdir ?= VoiceAnalyzer/res
 
 #
 # rust library configurable variables
@@ -94,6 +101,8 @@ default: help
 help:
 	@echo "Targets:"
 	@echo "  submodules             -- update submodules"
+	@echo "  acknowledgements       -- compile all copyright acknowledgements"
+	@echo "  rust-acknowledgements  -- compile rust crate copyright acknowledgements with cargo-about"
 	@echo
 	@echo "Targets to build all supported rust targets ($(subst $(SP),$(COMMA) ,$(RUST_ALL_TARGETS)))"
 	@echo "  rust-build-all         -- build rust debug and release libraries for all targets"
@@ -117,6 +126,23 @@ submodules:
 	git submodule foreach --recursive "git clean -xfd"
 	git submodule foreach --recursive "git reset --hard"
 	git submodule update --init
+
+.PHONY: acknowledgements
+acknowledgements: rust-acknowledgements swift-acknowledgements
+
+.PHONY: swift-acknowledgements
+swift-acknowledgements: $(resdir)/Settings.bundle/SwiftAcknowledgements.latest_result.txt
+
+$(resdir)/Settings.bundle/SwiftAcknowledgements.latest_result.txt: VoiceAnalyzer.xcworkspace/xcshareddata/swiftpm/Package.resolved Podfile.lock
+	if ! which $(LICENSE_PLIST) >/dev/null; then echo "Please run brew install mono0926/license-plist/license-plist"; exit 1; fi
+	$(LICENSE_PLIST) --output-path $(dir $@) --prefix $(patsubst %.latest_result.txt,%,$(notdir $@)) --single-page
+
+.PHONY: rust-acknowledgements
+rust-acknowledgements: $(resdir)/Settings.bundle/RustAcknowledgements.plist
+
+$(resdir)/Settings.bundle/RustAcknowledgements.plist: $(resdir)/RustAcknowledgements.plist.hbs Cargo.lock
+	$(CARGO) install cargo-about
+	$(CARGO) about generate $< > $@
 
 .PHONY: rust-build-all
 rust-build-all: rust-build-debug-all rust-build-release-all

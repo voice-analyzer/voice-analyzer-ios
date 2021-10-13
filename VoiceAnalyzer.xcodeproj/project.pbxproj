@@ -22,6 +22,7 @@
 		C83971F326EABA24003030DC /* DatabaseQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83971F226EABA24003030DC /* DatabaseQuery.swift */; };
 		C849A2A3270CFE9C00EA3180 /* VoicePlaybackSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C849A2A2270CFE9C00EA3180 /* VoicePlaybackSlider.swift */; };
 		C864B3EB26DEE03600E5E0D3 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */; };
+		C866033727164E6C0062DC36 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = C866033627164E6C0062DC36 /* Settings.bundle */; };
 		C867A2EA270798AB00FD79BD /* AnalysisFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2E9270798AB00FD79BD /* AnalysisFrame.swift */; };
 		C867A2EC27079E6B00FD79BD /* Analysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2EB27079E6B00FD79BD /* Analysis.swift */; };
 		C867A2EE2707B26800FD79BD /* RecordingPitchChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2ED2707B26800FD79BD /* RecordingPitchChart.swift */; };
@@ -57,6 +58,7 @@
 		C83971F226EABA24003030DC /* DatabaseQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseQuery.swift; sourceTree = "<group>"; };
 		C849A2A2270CFE9C00EA3180 /* VoicePlaybackSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicePlaybackSlider.swift; sourceTree = "<group>"; };
 		C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
+		C866033627164E6C0062DC36 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		C867A2E9270798AB00FD79BD /* AnalysisFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisFrame.swift; sourceTree = "<group>"; };
 		C867A2EB27079E6B00FD79BD /* Analysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analysis.swift; sourceTree = "<group>"; };
 		C867A2ED2707B26800FD79BD /* RecordingPitchChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingPitchChart.swift; sourceTree = "<group>"; };
@@ -152,6 +154,7 @@
 			isa = PBXGroup;
 			children = (
 				C83971E926EA9494003030DC /* schema.sql */,
+				C866033627164E6C0062DC36 /* Settings.bundle */,
 			);
 			path = res;
 			sourceTree = "<group>";
@@ -293,6 +296,7 @@
 				D45CDEC581F24DA4E639400A /* [CP] Check Pods Manifest.lock */,
 				C881ABF5266BFF7C006F83D4 /* Sources */,
 				C881ABF6266BFF7C006F83D4 /* Frameworks */,
+				C8AB13432716C0DA008B8A51 /* Compile Acknowledgements */,
 				C881ABF7266BFF7C006F83D4 /* Resources */,
 				49B55EAF9458A01415F05C89 /* [CP] Embed Pods Frameworks */,
 			);
@@ -352,6 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C881AC01266BFF7E006F83D4 /* Images.xcassets in Resources */,
+				C866033727164E6C0062DC36 /* Settings.bundle in Resources */,
 				C83971EA26EA9494003030DC /* schema.sql in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -375,6 +380,25 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-VoiceAnalyzer/Pods-VoiceAnalyzer-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		C8AB13432716C0DA008B8A51 /* Compile Acknowledgements */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Acknowledgements";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "PATH=\"/bin:/usr/bin:$PATH:/opt/homebrew/bin\" make acknowledgements CARGO=\"${CARGO:-$HOME/.cargo/bin/cargo}\"\n";
 		};
 		C8E68C6E26E29064003662A9 /* Compile Rust Sources */ = {
 			isa = PBXShellScriptBuildPhase;
