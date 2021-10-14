@@ -146,6 +146,19 @@ private struct RecordingRow: View {
     @State private var name: String
     private let initialName: String
 
+    private var seekAmount: UInt {
+        switch UInt(recording.length) {
+        case 00...30:
+            if #available(iOS 15, *) {
+                return 5
+            } else {
+                return 10
+            }
+        case 30...60: return 10
+        default: return 15
+        }
+    }
+
     private var isExpanded: Bool {
         if case .expanded(_) = expanded { return true } else { return false }
     }
@@ -242,8 +255,8 @@ private struct RecordingRow: View {
 
     var mediaButtons: some View {
         HStack(spacing: 40) {
-            Button { seek(by: -15) } label: {
-                Image(systemName: "gobackward.15")
+            Button { seek(by: -Float(seekAmount)) } label: {
+                Image(systemName: "gobackward.\(seekAmount)")
             }
             .imageScale(.medium)
             Button {
@@ -265,8 +278,8 @@ private struct RecordingRow: View {
                 }
             }
             .imageScale(.large)
-            Button { seek(by: 15) } label: {
-                Image(systemName: "goforward.15")
+            Button { seek(by: Float(seekAmount)) } label: {
+                Image(systemName: "goforward.\(seekAmount)")
             }
             .imageScale(.medium)
         }
