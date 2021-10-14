@@ -10,6 +10,7 @@ struct RecordingPitchChart: View {
     @ObservedObject var playback: VoicePlaybackModel
     @State var highlightedFrameIndex: UInt?
     @State var sliderPausedPlayback: Bool = false
+    @State var limitLines: PitchChartLimitLines = PitchChartLimitLines(lower: nil, upper: nil)
 
     struct Analysis {
         var analysis: DatabaseRecords.Analysis
@@ -55,6 +56,9 @@ struct RecordingPitchChart: View {
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: playback.currentTime) { currentTime in updateHighlightedFrame(currentTime: currentTime) }
             .onChange(of: analysis?.frames.count) { _ in updateHighlightedFrame() }
+            .onChange(of: analysis?.analysis) { analysis in
+                limitLines = PitchChartLimitLines(lower: analysis?.upperLimitLine, upper: analysis?.lowerLimitLine)
+            }
         }
     }
 
@@ -69,7 +73,9 @@ struct RecordingPitchChart: View {
                     playback.pausePlayback(env: env)
                     playback.currentTime = frames[Int(highlightedFrameIndex)].time
                 }
-            }
+            },
+            limitLines: $limitLines,
+            editingLimitLines: false
         )
     }
 

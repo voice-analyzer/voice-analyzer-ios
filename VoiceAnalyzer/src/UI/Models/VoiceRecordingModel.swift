@@ -36,6 +36,11 @@ public struct AnalysisFrame {
     }
 }
 
+public struct VoiceRecordingMetadata {
+    let lowerLimitLine: Double?
+    let upperLimitLine: Double?
+}
+
 public class VoiceRecordingModel: ObservableObject {
     static let CONFIDENCE_THRESHOLD: Float = 0.20
     static let HEADER_LENGTH: UInt = WaveHeader.encodedLength(dataFormat: .IEEEFloat)
@@ -115,13 +120,13 @@ public class VoiceRecordingModel: ObservableObject {
         _ = openRecordingFile()
     }
 
-    public func saveRecording(env: AppEnvironment) throws {
+    public func saveRecording(env: AppEnvironment, metadata: VoiceRecordingMetadata) throws {
         try recordingDispatchQueue.sync {
-            try saveRecordingOnCurrentThread(env: env)
+            try saveRecordingOnCurrentThread(env: env, metadata: metadata)
         }
     }
 
-    private func saveRecordingOnCurrentThread(env: AppEnvironment) throws {
+    private func saveRecordingOnCurrentThread(env: AppEnvironment, metadata: VoiceRecordingMetadata) throws {
         guard let recordingFile = recordingFile else { return }
         guard let sampleRate = recordingFile.sampleRate else { return }
         let dateNow = Date()
@@ -148,7 +153,9 @@ public class VoiceRecordingModel: ObservableObject {
         var analysisRecord = DatabaseRecords.Analysis(
             recordingId: -1,
             pitchEstimationAlgorithm: recordingState?.pitchEstimationAlgorithm.flatMap { $0.databaseRecord },
-            formantEstimationAlgorithm: recordingState?.formantEstimationAlgorithm.flatMap { $0.databaseRecord }
+            formantEstimationAlgorithm: recordingState?.formantEstimationAlgorithm.flatMap { $0.databaseRecord },
+            lowerLimitLine: metadata.lowerLimitLine,
+            upperLimitLine: metadata.upperLimitLine
         )
 
         let analysisFrameRecords = frames.map { frame in frame.databaseRecord }

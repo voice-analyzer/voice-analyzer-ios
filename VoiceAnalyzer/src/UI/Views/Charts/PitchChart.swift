@@ -1,14 +1,17 @@
 import SwiftUI
 import Charts
 
+struct PitchChartLimitLines: Equatable {
+    let lower: Double?
+    let upper: Double?
+}
+
 struct PitchChart: UIViewRepresentable {
     typealias UIViewType = LineChartView
 
     @Binding var highlightedFrameIndex: UInt?
-
-    static let PITCH_A0 = 27.5
-    static let PITCH_C3 = 130.8
-    static let PITCH_C4 = 261.6
+    @Binding var limitLines: PitchChartLimitLines
+    let editingLimitLines: Bool
 
     private static let LINE_WIDTH = 3.0
 
@@ -18,15 +21,22 @@ struct PitchChart: UIViewRepresentable {
     private let pitchData: [ChartDataEntry]
     private let formantsData: [[ChartDataEntry]]
 
-    init(analysisFrames: [AnalysisFrame], highlightedFrameIndex: Binding<UInt?>) {
+    init(
+        analysisFrames: [AnalysisFrame],
+        highlightedFrameIndex: Binding<UInt?>,
+        limitLines: Binding<PitchChartLimitLines>,
+        editingLimitLines: Bool
+    ) {
         _highlightedFrameIndex = highlightedFrameIndex
+        _limitLines = limitLines
+        self.editingLimitLines = editingLimitLines
 
         let voicedFrames: [AnalysisFrame] = analysisFrames
             .filter { frame in frame.pitchFrequency > Float(Self.MINIMUM_PITCH) && frame.pitchFrequency < Float(Self.MAXIMUM_PITCH) }
 
         pitchData = voicedFrames
             .enumerated()
-            .map { index, frame in ChartDataEntry(x: Double(index), y: Self.convertHzToKey(Double(frame.pitchFrequency))) }
+            .map { index, frame in ChartDataEntry(x: Double(index), y: MusicalPitch(fromHz: Double(frame.pitchFrequency)).value) }
 
         var formantsData: [[ChartDataEntry]] = []
         for (frameIndex, frame) in voicedFrames.enumerated() {
@@ -37,7 +47,7 @@ struct PitchChart: UIViewRepresentable {
             for (formantIndex, formant) in frameFormants.enumerated() {
                 if formant > Float(Self.MINIMUM_PITCH) && formant < Float(Self.MAXIMUM_PITCH) {
                     formantsData[formantIndex]
-                        .append(ChartDataEntry(x: Double(frameIndex), y: Self.convertHzToKey(Double(formant))))
+                        .append(ChartDataEntry(x: Double(frameIndex), y: (Double(MusicalPitch(fromHz: Double(formant)).value))))
                 }
             }
         }
@@ -50,10 +60,8 @@ struct PitchChart: UIViewRepresentable {
         chart.xAxis.drawGridLinesEnabled = false
         chart.xAxis.drawLabelsEnabled = false
         chart.leftAxis.valueFormatter = HzValueFormatter()
-        chart.leftAxis.axisMinimum = 1.0
-        chart.leftAxis.axisMaximum = Self.convertHzToKey(Self.MAXIMUM_PITCH)
-        chart.leftAxis.addLimitLine(ChartLimitLine(limit: Self.convertHzToKey(Self.PITCH_C3), label: "C3"))
-        chart.leftAxis.addLimitLine(ChartLimitLine(limit: Self.convertHzToKey(Self.PITCH_C4), label: "C4"))
+        chart.leftAxis.axisMinimum = MusicalPitch(fromHz: Self.MINIMUM_PITCH).value
+        chart.leftAxis.axisMaximum = MusicalPitch(fromHz: Self.MAXIMUM_PITCH).value
         chart.leftAxis.drawLimitLinesBehindDataEnabled = true
         chart.leftAxis.labelCount = 8
         chart.rightAxis.enabled = false
@@ -65,16 +73,9 @@ struct PitchChart: UIViewRepresentable {
 
     func updateUIView(_ chart: UIViewType, context: Context) {
         updateDataSet(chart: chart)
-        if let highlightedFrameIndex = highlightedFrameIndex {
-            chart.highlightValue(x: Double(highlightedFrameIndex), dataSetIndex: 0, callDelegate: false)
-        } else {
-            chart.highlightValue(nil)
-        }
+        updateLimitLines(chart: chart)
+        updateHighlight(chart: chart)
         chart.notifyDataSetChanged()
-    }
-
-    static func convertHzToKey(_ hz: Double) -> Double {
-        log2(hz / Self.PITCH_A0)
     }
 
     func updateDataSet(chart: UIViewType) {
@@ -111,6 +112,38 @@ struct PitchChart: UIViewRepresentable {
         chart.data = LineChartData(dataSets: dataSets)
     }
 
+    func updateLimitLines(chart: UIViewType) {
+        if let lowerLimitLine = limitLines.lower {
+            let lowerLimitLinePitch = MusicalPitch(fromHz: lowerLimitLine)
+            chart.leftAxis.addLimitLine(ChartLimitLine(
+                limit: lowerLimitLinePitch.value,
+                label: lowerLimitLinePitch.closestNote().description()
+            ))
+        }
+
+        if let upperLimitLine = limitLines.upper {
+            let upperLimitLinePitch = MusicalPitch(fromHz: upperLimitLine)
+            chart.leftAxis.addLimitLine(ChartLimitLine(
+                limit: upperLimitLinePitch.value,
+                label: upperLimitLinePitch.closestNote().description()
+            ))
+        }
+
+        if editingLimitLines {
+            chart.isUserInteractionEnabled = false
+        } else {
+            chart.isUserInteractionEnabled = true
+        }
+    }
+
+    func updateHighlight(chart: UIViewType) {
+        if let highlightedFrameIndex = highlightedFrameIndex {
+            chart.highlightValue(x: Double(highlightedFrameIndex), dataSetIndex: 0, callDelegate: false)
+        } else {
+            chart.highlightValue(nil)
+        }
+    }
+
     func makeCoordinator() -> Coordinator {
         return Coordinator(self)
     }
@@ -129,11 +162,10 @@ struct PitchChart: UIViewRepresentable {
 }
 
 class HzValueFormatter: IAxisValueFormatter {
-    static let NOTES = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
     func stringForValue(_ value: Double, axis: AxisBase?) -> String {
-        let note = Self.NOTES[Int(round(12.0 * value)) % 12]
-        let octave = 1 + Int(value - 3.0 / 12.0)
-        let intHzValue = Int(PitchChart.PITCH_A0 * pow(2.0, value))
-        return "~\(note)\(octave) (\(intHzValue)Hz)"
+        let musicalPitch = MusicalPitch(value: value)
+        let noteDescription = musicalPitch.closestNote().description()
+        let intHzValue = Int(musicalPitch.hz())
+        return "~\(noteDescription) (\(intHzValue)Hz)"
     }
 }

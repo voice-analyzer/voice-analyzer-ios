@@ -5,12 +5,14 @@ import SwiftUI
 struct LivePitchChart: View {
     @Binding var isPresented: Bool
     @ObservedObject var voiceRecording: VoiceRecordingModel
+    @State var limitLines: PitchChartLimitLines
 
     @Environment(\.env) var env: AppEnvironment
 
     @State private var isRecording = false
     @State private var preferencesIsPresented = false
     @State private var highlightedFrameIndex: UInt? = nil
+    @State private var editingLimitLines: Bool = false
 
     var body: some View {
         GeometryReader {
@@ -43,7 +45,12 @@ struct LivePitchChart: View {
     }
 
     var chartView: some View {
-        ChartView(analysisFrames: voiceRecording.frames, highlightedFrameIndex: $highlightedFrameIndex)
+        ChartView(
+            analysisFrames: voiceRecording.frames,
+            highlightedFrameIndex: $highlightedFrameIndex,
+            limitLines: $limitLines,
+            editingLimitLines: editingLimitLines
+        )
     }
 
     var toolbarView: some View {
@@ -105,7 +112,11 @@ struct LivePitchChart: View {
     var saveButton: some View {
         Button(action: {
             do {
-                try voiceRecording.saveRecording(env: env)
+                let metadata = VoiceRecordingMetadata(
+                    lowerLimitLine: limitLines.lower,
+                    upperLimitLine: limitLines.upper
+                )
+                try voiceRecording.saveRecording(env: env, metadata: metadata)
                 isPresented = false
             } catch {
                 os_log("error saving recording: %@", error.localizedDescription)

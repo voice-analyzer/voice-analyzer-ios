@@ -16,6 +16,8 @@ CREATE TABLE analysis (
     , "recordingId" INTEGER NOT NULL
     , "pitchEstimationAlgorithm" INTEGER
     , "formantEstimationAlgorithm" INTEGER
+    , "lowerLimitLine" REAL
+    , "upperLimitLine" REAL
 );
 
 CREATE INDEX analysisRecordingId ON analysis (

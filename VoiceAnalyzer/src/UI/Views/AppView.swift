@@ -3,6 +3,8 @@ import SwiftUI
 
 struct AppView: View {
     @Environment(\.colorScheme) private var colorScheme: ColorScheme
+    @Environment(\.env) var env: AppEnvironment
+
     @State private var livePitchChartIsPresented = true
     @State private var recordingsVisible = false
     @State private var recordingsEditMode: EditMode = .inactive
@@ -24,7 +26,14 @@ struct AppView: View {
     }
 
     var livePitchChart: some View {
-        LivePitchChart(isPresented: $livePitchChartIsPresented, voiceRecording: voiceRecording)
+        LivePitchChart(
+            isPresented: $livePitchChartIsPresented,
+            voiceRecording: voiceRecording,
+            limitLines: PitchChartLimitLines(
+                lower: env.preferences.lowerLimitLine,
+                upper: env.preferences.upperLimitLine
+            )
+        )
             .onAppear {
                 recordingsVisible = true
             }

@@ -2,11 +2,13 @@ import Foundation
 import GRDB
 
 extension DatabaseRecords {
-    struct Analysis: Codable, FetchableRecord, MutablePersistableRecord {
+    struct Analysis: Codable, FetchableRecord, MutablePersistableRecord, Equatable {
         var id: Int64?
         var recordingId: Int64
         var pitchEstimationAlgorithm: PitchEstimationAlgorithm?
         var formantEstimationAlgorithm: FormantEstimationAlgorithm?
+        var lowerLimitLine: Double?
+        var upperLimitLine: Double?
 
         var unwrappedId: Int64 { id! }
 
@@ -19,6 +21,8 @@ extension DatabaseRecords {
             static let recordingId = Column(CodingKeys.recordingId)
             static let pitchEstimationAlgorithm = Column(CodingKeys.pitchEstimationAlgorithm)
             static let formantEstimationAlgorithm = Column(CodingKeys.formantEstimationAlgorithm)
+            static let lowerLimitLine = Column(CodingKeys.lowerLimitLine)
+            static let upperLimitLine = Column(CodingKeys.upperLimitLine)
         }
     }
 
