@@ -92,7 +92,7 @@ struct VoicePlaybackSliderBar: UIViewRepresentable {
 }
 
 private func formatRecordingLength(_ length: Float) -> String {
-    let interval = TimeInterval(length)
+    let interval = TimeInterval(abs(length))
     let formatter = DateComponentsFormatter()
     formatter.unitsStyle = .positional
     if interval >= 60 * 60 {
