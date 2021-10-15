@@ -22,8 +22,12 @@ struct RecordingsView: View {
                     .tag(index)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        if case .collapsed = expanded, editMode?.wrappedValue != .active {
-                            expandedRecordingId = recording.id
+                        if case .collapsed = expanded {
+                            switch editMode?.wrappedValue {
+                            case .some(.inactive), .none:
+                                expandedRecordingId = recording.id
+                            default: break
+                            }
                         }
                     }
             }
