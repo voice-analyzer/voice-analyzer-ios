@@ -68,7 +68,8 @@ struct RecordingPitchChart: View {
             highlightedFrameIndex: Binding { highlightedFrameIndex } set: {
                 highlightedFrameIndex = $0
                 if let highlightedFrameIndex = highlightedFrameIndex,
-                   let frames = analysis?.frames
+                   let frames = analysis?.frames,
+                   highlightedFrameIndex < frames.count
                 {
                     playback.pausePlayback(env: env)
                     playback.currentTime = frames[Int(highlightedFrameIndex)].time
