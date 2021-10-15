@@ -98,7 +98,8 @@ struct PitchChart: UIViewRepresentable {
             formantDataSet.drawIconsEnabled = false
             formantDataSet.mode = .horizontalBezier
             formantDataSet.lineWidth = Self.LINE_WIDTH
-            formantDataSet.setColor(.systemYellow)
+            formantDataSet.lineDashLengths = [5, 5]
+            formantDataSet.setColor(UIColor(Color.accentColor))
             dataSets.append(formantDataSet)
         }
 
