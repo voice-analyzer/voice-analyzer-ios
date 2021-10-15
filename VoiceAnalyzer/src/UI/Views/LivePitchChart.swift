@@ -4,7 +4,9 @@ import SwiftUI
 
 struct LivePitchChart: View {
     @Binding var isPresented: Bool
+    @ObservedObject var voiceRecorder: VoiceRecorderModel
     @ObservedObject var voiceRecording: VoiceRecordingModel
+    @Binding var analysisFrames: [AnalysisFrame]
     @State var limitLines: PitchChartLimitLines
 
     @Environment(\.env) var env: AppEnvironment
@@ -32,25 +34,33 @@ struct LivePitchChart: View {
         }
         .onAppear {
             do {
-                try voiceRecording.startRecording(env: env)
-                isRecording = voiceRecording.isRecording
+                try voiceRecorder.start(env: env, recording: voiceRecording)
+                isRecording = voiceRecorder.isRecording
             } catch {
                 os_log("error starting recording: %@", error.localizedDescription)
             }
         }
         .onDisappear {
-            voiceRecording.stopRecording(env: env)
-            isRecording = voiceRecording.isRecording
+            voiceRecorder.stop(env: env)
+            isRecording = voiceRecorder.isRecording
         }
     }
 
     var chartView: some View {
         ChartView(
-            analysisFrames: voiceRecording.frames,
+            analysisFrames: analysisFrames,
             highlightedFrameIndex: $highlightedFrameIndex,
             limitLines: $limitLines,
             editingLimitLines: editingLimitLines
         )
+            .onReceive(voiceRecording.frames.receive(on: DispatchQueue.main)) { update in
+                switch update {
+                case .append(let frame):
+                    analysisFrames.append(frame)
+                case .clear:
+                    analysisFrames.removeAll()
+                }
+            }
     }
 
     var toolbarView: some View {
@@ -90,8 +100,8 @@ struct LivePitchChart: View {
     var recordButton: some View {
         Button(action: {
             do {
-                try voiceRecording.toggleRecording(env: env)
-                isRecording = voiceRecording.isRecording
+                try voiceRecorder.toggle(env: env, recording: voiceRecording)
+                isRecording = voiceRecorder.isRecording
             } catch {
                 os_log("error toggling recording: %@", error.localizedDescription)
             }
@@ -102,7 +112,7 @@ struct LivePitchChart: View {
 
     var clearButton: some View {
         Button(action: {
-            voiceRecording.clearRecording()
+            voiceRecording.clear()
         }) {
             Image(systemName: "trash")
         }
@@ -116,12 +126,12 @@ struct LivePitchChart: View {
                     lowerLimitLine: limitLines.lower,
                     upperLimitLine: limitLines.upper
                 )
-                try voiceRecording.saveRecording(env: env, metadata: metadata)
+                try voiceRecording.save(env: env, metadata: metadata)
                 isPresented = false
             } catch {
                 os_log("error saving recording: %@", error.localizedDescription)
             }
-            voiceRecording.stopRecording(env: env)
+            voiceRecorder.stop(env: env)
         }) {
             Image(systemName: "square.and.arrow.down")
         }

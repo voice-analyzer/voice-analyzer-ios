@@ -21,6 +21,7 @@
 		C83971F126EAB5E1003030DC /* RecordingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83971F026EAB5E1003030DC /* RecordingsView.swift */; };
 		C83971F326EABA24003030DC /* DatabaseQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83971F226EABA24003030DC /* DatabaseQuery.swift */; };
 		C849A2A3270CFE9C00EA3180 /* VoicePlaybackSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C849A2A2270CFE9C00EA3180 /* VoicePlaybackSlider.swift */; };
+		C8635779271A13DC005CE037 /* VoiceRecorderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8635778271A13DC005CE037 /* VoiceRecorderModel.swift */; };
 		C864B3EB26DEE03600E5E0D3 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */; };
 		C866033727164E6C0062DC36 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = C866033627164E6C0062DC36 /* Settings.bundle */; };
 		C867A2EA270798AB00FD79BD /* AnalysisFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A2E9270798AB00FD79BD /* AnalysisFrame.swift */; };
@@ -58,6 +59,7 @@
 		C83971F026EAB5E1003030DC /* RecordingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsView.swift; sourceTree = "<group>"; };
 		C83971F226EABA24003030DC /* DatabaseQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseQuery.swift; sourceTree = "<group>"; };
 		C849A2A2270CFE9C00EA3180 /* VoicePlaybackSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicePlaybackSlider.swift; sourceTree = "<group>"; };
+		C8635778271A13DC005CE037 /* VoiceRecorderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecorderModel.swift; sourceTree = "<group>"; };
 		C864B3EA26DEE03600E5E0D3 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
 		C866033627164E6C0062DC36 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		C867A2E9270798AB00FD79BD /* AnalysisFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisFrame.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 				C82DB1F826A3548600B0A7FE /* VoiceRecordingModel.swift */,
 				C83971F226EABA24003030DC /* DatabaseQuery.swift */,
 				C827038A26F12F630035F482 /* VoicePlaybackModel.swift */,
+				C8635778271A13DC005CE037 /* VoiceRecorderModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -452,6 +455,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C82DB1FB26A357CB00B0A7FE /* AudioSession.swift in Sources */,
+				C8635779271A13DC005CE037 /* VoiceRecorderModel.swift in Sources */,
 				C867A2EA270798AB00FD79BD /* AnalysisFrame.swift in Sources */,
 				C827038B26F12F630035F482 /* VoicePlaybackModel.swift in Sources */,
 				C82DB1FE26A35AC800B0A7FE /* AppEnvironment.swift in Sources */,

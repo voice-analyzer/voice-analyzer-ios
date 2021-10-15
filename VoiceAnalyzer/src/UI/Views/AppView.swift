@@ -8,7 +8,9 @@ struct AppView: View {
     @State private var livePitchChartIsPresented = true
     @State private var recordingsVisible = false
     @State private var recordingsEditMode: EditMode = .inactive
+    @StateObject private var voiceRecorder = VoiceRecorderModel()
     @StateObject private var voiceRecording = VoiceRecordingModel()
+    @State private var analysisFrames: [AnalysisFrame] = []
 
     var body: some View {
         NavigationView {
@@ -28,7 +30,9 @@ struct AppView: View {
     var livePitchChart: some View {
         LivePitchChart(
             isPresented: $livePitchChartIsPresented,
+            voiceRecorder: voiceRecorder,
             voiceRecording: voiceRecording,
+            analysisFrames: $analysisFrames,
             limitLines: PitchChartLimitLines(
                 lower: env.preferences.lowerLimitLine,
                 upper: env.preferences.upperLimitLine

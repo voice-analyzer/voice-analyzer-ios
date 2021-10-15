@@ -1,7 +1,8 @@
 import os
 import AVFoundation
+import Combine
 
-public struct AnalysisFrame {
+struct AnalysisFrame {
     var time: Float
     var pitchFrequency: Float
     var pitchConfidence: Float
@@ -36,97 +37,48 @@ public struct AnalysisFrame {
     }
 }
 
-public struct VoiceRecordingMetadata {
+struct VoiceRecordingMetadata {
     let lowerLimitLine: Double?
     let upperLimitLine: Double?
+
+    let pitchEstimationAlgorithm: PitchEstimationAlgorithm? = nil
+    let formantEstimationAlgorithm: FormantEstimationAlgorithm? = nil
 }
 
-public class VoiceRecordingModel: ObservableObject {
-    static let CONFIDENCE_THRESHOLD: Float = 0.20
+class VoiceRecordingModel: ObservableObject {
     static let HEADER_LENGTH: UInt = WaveHeader.encodedLength(dataFormat: .IEEEFloat)
 
-    @Published var frames: [AnalysisFrame] = []
-
-    struct RecordingState {
-        let activity: AudioSession.Activity
-        let engine: AVAudioEngine
-
-        var analyzer: Analyzer? = nil
-        var sampleRate: Float64? = nil
-        var pitchEstimationAlgorithm: PitchEstimationAlgorithm? = nil
-        var formantEstimationAlgorithm: FormantEstimationAlgorithm? = nil
+    enum FramesUpdate {
+        case append(AnalysisFrame)
+        case clear
     }
 
-    struct RecordingFileState {
+    let frames = PassthroughSubject<FramesUpdate, Never>()
+
+    private struct RecordingFileState {
         let handle: FileHandle
 
         var sampleRate: Float64? = nil
         var samples: UInt64 = 0
     }
 
-    private var recordingState: RecordingState?
     private var recordingFile: RecordingFileState?
+    private var databaseFrames: [DatabaseRecords.AnalysisFrame] = []
 
-    private let recordingDispatchQueue = DispatchQueue(label: "Voice Recording")
+    private let dispatchQueue = DispatchQueue(label: "VoiceRecordingModel", target: .global(qos: .userInitiated))
 
-    public var isRecording: Bool {
-        get { if let _ = recordingState { return true } else { return false } }
-    }
+    func save(env: AppEnvironment, metadata: VoiceRecordingMetadata) throws {
+        dispatchPrecondition(condition: .notOnQueue(dispatchQueue))
 
-    public func toggleRecording(env: AppEnvironment) throws {
-        if let _ = self.recordingState {
-            stopRecording(env: env)
-        } else {
-            try startRecording(env: env)
+        try dispatchQueue.sync {
+            try saveOnCurrentThread(env: env, metadata: metadata)
+            clearOnCurrentThread()
         }
     }
 
-    public func startRecording(env: AppEnvironment) throws {
-        if let _ = self.recordingState {
-            stopRecording(env: env)
-        }
+    private func saveOnCurrentThread(env: AppEnvironment, metadata: VoiceRecordingMetadata) throws {
+        dispatchPrecondition(condition: .onQueue(dispatchQueue))
 
-        os_log("starting recording")
-
-        let activity = AudioSession.Activity(category: .record)
-        env.audioSession.startActivity(activity)
-
-        let engine = AVAudioEngine()
-        let inputFormat = engine.inputNode.outputFormat(forBus: 0)
-        engine.inputNode.installTap(onBus: 0, bufferSize: 512, format: inputFormat) {
-            [weak self] (buffer, time) in self?.processData(buffer: buffer, time: time, env: env)
-        }
-
-        _ = openRecordingFile()
-
-        try engine.start()
-
-        self.recordingState = RecordingState(activity: activity, engine: engine)
-    }
-
-    public func stopRecording(env: AppEnvironment) {
-        guard let state = self.recordingState else { return }
-        recordingState = nil
-
-        os_log("stopping recording")
-
-        state.engine.stop()
-        env.audioSession.endActivity(state.activity)
-    }
-
-    public func clearRecording() {
-        frames = []
-        recordingFile = nil
-        _ = openRecordingFile()
-    }
-
-    public func saveRecording(env: AppEnvironment, metadata: VoiceRecordingMetadata) throws {
-        try recordingDispatchQueue.sync {
-            try saveRecordingOnCurrentThread(env: env, metadata: metadata)
-        }
-    }
-
-    private func saveRecordingOnCurrentThread(env: AppEnvironment, metadata: VoiceRecordingMetadata) throws {
         guard let recordingFile = recordingFile else { return }
         guard let sampleRate = recordingFile.sampleRate else { return }
         let dateNow = Date()
@@ -152,13 +104,11 @@ public class VoiceRecordingModel: ObservableObject {
 
         var analysisRecord = DatabaseRecords.Analysis(
             recordingId: -1,
-            pitchEstimationAlgorithm: recordingState?.pitchEstimationAlgorithm.flatMap { $0.databaseRecord },
-            formantEstimationAlgorithm: recordingState?.formantEstimationAlgorithm.flatMap { $0.databaseRecord },
+            pitchEstimationAlgorithm: metadata.pitchEstimationAlgorithm.flatMap { $0.databaseRecord },
+            formantEstimationAlgorithm: metadata.formantEstimationAlgorithm.flatMap { $0.databaseRecord },
             lowerLimitLine: metadata.lowerLimitLine,
             upperLimitLine: metadata.upperLimitLine
         )
-
-        let analysisFrameRecords = frames.map { frame in frame.databaseRecord }
 
         let waveHeader = WaveHeader(
             dataLength: UInt32(recordingFileSize) - UInt32(Self.HEADER_LENGTH),
@@ -180,22 +130,30 @@ public class VoiceRecordingModel: ObservableObject {
             os_log("error moving recording file: %@", error.localizedDescription)
         }
 
-        try env.databaseStorage.writer().write { db in
+        try env.databaseStorage.writer().write { [databaseFrames] db in
             try recordingRecord.insert(db)
             analysisRecord.recordingId = recordingRecord.unwrappedId
             try analysisRecord.insert(db)
-            for var analysisFrameRecord in analysisFrameRecords {
+            for var analysisFrameRecord in databaseFrames {
                 analysisFrameRecord.analysisId = analysisRecord.unwrappedId
                 try analysisFrameRecord.insert(db)
             }
         }
         os_log("saved recording file: %@", destRecordingFileUrl.relativeString)
-
-        clearRecording()
     }
 
-    func openRecordingFile() -> RecordingFileState? {
-        if let recordingFile = recordingFile { return recordingFile }
+    func open() {
+        dispatchPrecondition(condition: .notOnQueue(dispatchQueue))
+
+        dispatchQueue.sync {
+            openOnCurrentThread()
+        }
+    }
+
+    private func openOnCurrentThread() {
+        dispatchPrecondition(condition: .onQueue(dispatchQueue))
+
+        if recordingFile != nil { return }
         do {
             let recordingFileUrl = try AppFilesystem.appLiveRecordingFile()
             FileManager.default.createFile(atPath: recordingFileUrl.path, contents: nil)
@@ -203,95 +161,26 @@ public class VoiceRecordingModel: ObservableObject {
             try recordingFile.handle.truncate(atOffset: 0)
             try recordingFile.handle.write(contentsOf: Data(count: Int(Self.HEADER_LENGTH)))
             self.recordingFile = recordingFile
-            return recordingFile
         } catch {
             os_log("error opening live recording file: %@", error.localizedDescription)
-            return nil
         }
     }
 
-    func processData(buffer: AVAudioPCMBuffer, time: AVAudioTime, env: AppEnvironment) {
-        var sampleRateChanged = false
-        if buffer.format.sampleRate != self.recordingState?.sampleRate {
-            if let oldSampleRate = self.recordingState?.sampleRate {
-                os_log("sample rate changed from %f to %f", oldSampleRate, buffer.format.sampleRate)
+    func writeData(data: [Float], sampleRate: Double, time: AVAudioTime) {
+        dispatchPrecondition(condition: .notOnQueue(dispatchQueue))
+
+        dispatchQueue.sync {
+            guard let recordingFile = recordingFile else { return }
+
+            var sampleRateChanged = false
+            if sampleRate != recordingFile.sampleRate {
+                if let oldSampleRate = recordingFile.sampleRate {
+                    sampleRateChanged = true
+                    os_log("sample rate for recording changed from %f to %f", oldSampleRate, sampleRate)
+                }
+                self.recordingFile?.sampleRate = sampleRate
             }
-            self.recordingState?.analyzer = nil
-            self.recordingState?.sampleRate = buffer.format.sampleRate
-        }
 
-        if buffer.format.sampleRate != self.recordingFile?.sampleRate {
-            if let oldSampleRate = self.recordingFile?.sampleRate {
-                sampleRateChanged = true
-                os_log("sample rate for recording changed from %f to %f", oldSampleRate, buffer.format.sampleRate)
-            }
-            self.recordingFile?.sampleRate = buffer.format.sampleRate
-        }
-
-        writeData(buffer: buffer, time: time, sampleRateChanged: sampleRateChanged)
-
-        let pitchEstimationAlgorithm: PitchEstimationAlgorithm
-        switch env.preferences.pitchEstimationAlgorithm {
-        case .IRAPT: pitchEstimationAlgorithm = PitchEstimationAlgorithm.Irapt
-        case .Yin:   pitchEstimationAlgorithm = PitchEstimationAlgorithm.Yin
-        }
-
-        let formantEstimationAlgorithm = env.preferences.formantEstimationEnabled ? FormantEstimationAlgorithm.LibFormants : .None
-
-        if pitchEstimationAlgorithm != self.recordingState?.pitchEstimationAlgorithm {
-            if let oldPitchEstimationAlgorithm = self.recordingState?.pitchEstimationAlgorithm {
-                os_log("pitch estimation algorithm changed from %d to %d",
-                       oldPitchEstimationAlgorithm.rawValue,
-                       pitchEstimationAlgorithm.rawValue)
-            }
-            self.recordingState?.analyzer = nil
-            self.recordingState?.pitchEstimationAlgorithm = pitchEstimationAlgorithm
-        }
-
-        if formantEstimationAlgorithm != self.recordingState?.formantEstimationAlgorithm {
-            if let oldFormantEstimationAlgorithm = self.recordingState?.formantEstimationAlgorithm {
-                os_log("formant estimation algorithm changed from %d to %d",
-                       oldFormantEstimationAlgorithm.rawValue,
-                       formantEstimationAlgorithm.rawValue)
-            }
-            self.recordingState?.analyzer = nil
-            self.recordingState?.formantEstimationAlgorithm = formantEstimationAlgorithm
-        }
-
-        let analyzer = self.recordingState?.analyzer ?? {
-            os_log("starting analyzer with pitch estimation algorithm %d and sample rate %f",
-                   pitchEstimationAlgorithm.rawValue,
-                   buffer.format.sampleRate)
-            return Analyzer(
-                sampleRate: buffer.format.sampleRate,
-                pitchEstimationAlgorithm: pitchEstimationAlgorithm,
-                formantEstimationAlgorithm: formantEstimationAlgorithm
-            )
-        }()
-        self.recordingState?.analyzer = analyzer
-
-        let output = analyzer.process(
-            samples: buffer.floatChannelData!.pointee,
-            samplesLen: UInt(buffer.frameLength))
-        if output.pitch.confidence > Self.CONFIDENCE_THRESHOLD {
-            let timeInSeconds = Float(self.recordingFile?.samples ?? 0) / Float(buffer.format.sampleRate)
-            let frame = AnalysisFrame(
-                time: timeInSeconds,
-                pitchFrequency: output.pitch.value,
-                pitchConfidence: output.pitch.confidence,
-                firstFormantFrequency: nonZeroFloat(output.formants.0.frequency),
-                secondFormantFrequency: nonZeroFloat(output.formants.1.frequency)
-            )
-            DispatchQueue.main.async {
-                self.frames.append(frame)
-            }
-        }
-    }
-
-    func writeData(buffer: AVAudioPCMBuffer, time: AVAudioTime, sampleRateChanged: Bool) {
-        guard let recordingFile = recordingFile else { return }
-
-        recordingDispatchQueue.async {
             if sampleRateChanged {
                 do {
                     try recordingFile.handle.truncate(atOffset: UInt64(Self.HEADER_LENGTH))
@@ -301,14 +190,51 @@ public class VoiceRecordingModel: ObservableObject {
                 }
             }
 
-            let data = Data(UnsafeRawBufferPointer(start: buffer.floatChannelData!.pointee, count: Int(buffer.frameLength * 4)))
             do {
-                try recordingFile.handle.write(contentsOf: data)
-                self.recordingFile?.samples += UInt64(buffer.frameLength)
+                try data.withUnsafeBytes { buffer in
+                    try recordingFile.handle.write(contentsOf: Data(buffer))
+                }
+                self.recordingFile?.samples += UInt64(data.count)
             } catch {
                 os_log("error writing to live recording file: %@", error.localizedDescription)
             }
         }
+    }
+
+    func appendFrame(output: AnalyzerOutput) {
+        dispatchPrecondition(condition: .notOnQueue(dispatchQueue))
+
+        dispatchQueue.sync {
+            guard let recordingFile = recordingFile else { return }
+            guard let sampleRate = recordingFile.sampleRate else { return }
+            let timeInSeconds = Float(recordingFile.samples) / Float(sampleRate)
+            let frame = AnalysisFrame(
+                time: timeInSeconds,
+                pitchFrequency: output.pitch.value,
+                pitchConfidence: output.pitch.confidence,
+                firstFormantFrequency: nonZeroFloat(output.formants.0.frequency),
+                secondFormantFrequency: nonZeroFloat(output.formants.1.frequency)
+            )
+            databaseFrames.append(frame.databaseRecord)
+            frames.send(.append(frame))
+        }
+    }
+
+    func clear() {
+        dispatchPrecondition(condition: .notOnQueue(dispatchQueue))
+
+        dispatchQueue.sync {
+            clearOnCurrentThread()
+        }
+    }
+
+    private func clearOnCurrentThread() {
+        dispatchPrecondition(condition: .onQueue(dispatchQueue))
+
+        frames.send(.clear)
+        databaseFrames = []
+        recordingFile = nil
+        openOnCurrentThread()
     }
 }
 
