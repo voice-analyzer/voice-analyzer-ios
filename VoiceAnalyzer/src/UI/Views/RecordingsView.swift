@@ -9,13 +9,13 @@ struct RecordingsView: View {
     @StateObject private var playback = VoicePlaybackModel()
     @DatabaseQuery(Self.queryAllRecordings) private var recordings: [DatabaseRecords.Recording] = []
     @State private var selectedRecordingIndices: Set<Int> = Set()
-    @State private var expandedRecordingIndex: Int?
+    @State private var expandedRecordingId: Int64?
     @State private var pitchChartActive: Bool = false
 
     var body: some View {
         List(selection: $selectedRecordingIndices) {
             ForEach(Array(recordings.enumerated()), id: \.1.unwrappedId) { (index, recording) in
-                let expanded: RecordingRow.ExpansionState = index == expandedRecordingIndex ?
+                let expanded: RecordingRow.ExpansionState = recording.id == expandedRecordingId ?
                     .expanded(RecordingRow.ExpandedState(pitchChartActive: $pitchChartActive)) :
                     .collapsed
                 RecordingRow(recording: recording, expanded: expanded, playback: playback)
@@ -23,7 +23,7 @@ struct RecordingsView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         if case .collapsed = expanded, editMode?.wrappedValue != .active {
-                            expandedRecordingIndex = index
+                            expandedRecordingId = recording.id
                         }
                     }
             }
@@ -57,8 +57,8 @@ struct RecordingsView: View {
                 playback.pausePlayback(env: env)
             }
         }
-        .onChange(of: expandedRecordingIndex) { [expandedRecordingIndex] newExpandedRecordingIndex in
-            if newExpandedRecordingIndex != expandedRecordingIndex {
+        .onChange(of: expandedRecordingId) { [expandedRecordingId] newExpandedRecordingId in
+            if newExpandedRecordingId != expandedRecordingId {
                 playback.stopPlayback(env: env)
                 playback.currentTime = 0
             }
@@ -77,9 +77,6 @@ struct RecordingsView: View {
     }
 
     private func deleteRecordings<C: Collection>(at indices: C) where C.Element: BinaryInteger {
-        if let expandedRecordingIndex = expandedRecordingIndex, indices.contains(where: { $0 == expandedRecordingIndex }) {
-            self.expandedRecordingIndex = nil
-        }
         let recordings = indices.lazy.map { index in self.recordings[Int(index)] }
         deleteRecordings(recordings: AnyCollection(recordings))
     }
@@ -87,6 +84,9 @@ struct RecordingsView: View {
     private func deleteRecordings(recordings: AnyCollection<DatabaseRecords.Recording>) {
         let ids = Array(recordings.compactMap { recording in recording.id })
         let filenames = Array(recordings.compactMap { recording in recording.filename })
+        if let expandedRecordingId = expandedRecordingId, ids.contains(where: { $0 == expandedRecordingId }) {
+            self.expandedRecordingId = nil
+        }
         env.databaseStorage.writer().asyncWrite { db -> Int in
             let deleted = try DatabaseRecords.Recording.deleteAll(db, keys: ids)
             try DatabaseRecords.Analysis
