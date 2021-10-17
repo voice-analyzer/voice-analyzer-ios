@@ -14,12 +14,13 @@ struct PitchChart: UIViewRepresentable {
     let editingLimitLines: Bool
 
     private static let LINE_WIDTH = 3.0
+    private static let MAX_LINE_SEGMENT_JUMP_IN_Y = 0.75
 
     private static let MINIMUM_PITCH = 55.0
     private static let MAXIMUM_PITCH = 1760.0
 
-    private let pitchData: [ChartDataEntry]
-    private let formantsData: [[ChartDataEntry]]
+    private let pitchDataSegments: [[ChartDataEntry]]
+    private let formantsDataSegments: [[[ChartDataEntry]]]
 
     init(
         analysisFrames: [AnalysisFrame],
@@ -34,9 +35,11 @@ struct PitchChart: UIViewRepresentable {
         let voicedFrames: [AnalysisFrame] = analysisFrames
             .filter { frame in frame.pitchFrequency > Float(Self.MINIMUM_PITCH) && frame.pitchFrequency < Float(Self.MAXIMUM_PITCH) }
 
-        pitchData = voicedFrames
+        pitchDataSegments = voicedFrames
             .enumerated()
+            .lazy
             .map { index, frame in ChartDataEntry(x: Double(index), y: MusicalPitch(fromHz: Double(frame.pitchFrequency)).value) }
+            .group { a, b in abs(a.y - b.y) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y }
 
         var formantsData: [[ChartDataEntry]] = []
         for (frameIndex, frame) in voicedFrames.enumerated() {
@@ -51,7 +54,8 @@ struct PitchChart: UIViewRepresentable {
                 }
             }
         }
-        self.formantsData = formantsData
+        formantsDataSegments = formantsData
+            .map { formantData in formantData.group { a, b in abs(a.y - b.y) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y } }
     }
 
     func makeUIView(context: Context) -> UIViewType {
@@ -80,27 +84,31 @@ struct PitchChart: UIViewRepresentable {
 
     func updateDataSet(chart: UIViewType) {
         var dataSets: [LineChartDataSet] = []
-        if !pitchData.isEmpty {
-            let pitchDataSet = LineChartDataSet(entries: pitchData)
-            pitchDataSet.drawCirclesEnabled = false
-            pitchDataSet.drawValuesEnabled = false
-            pitchDataSet.drawIconsEnabled = false
-            pitchDataSet.lineWidth = Self.LINE_WIDTH
-            pitchDataSet.setColor(UIColor(Color.accentColor))
-            pitchDataSet.mode = .horizontalBezier
-            dataSets.append(pitchDataSet)
+        if !pitchDataSegments.isEmpty {
+            for pitchDataSegment in pitchDataSegments {
+                let pitchDataSet = LineChartDataSet(entries: pitchDataSegment)
+                pitchDataSet.drawCirclesEnabled = false
+                pitchDataSet.drawValuesEnabled = false
+                pitchDataSet.drawIconsEnabled = false
+                pitchDataSet.lineWidth = Self.LINE_WIDTH
+                pitchDataSet.setColor(UIColor(Color.accentColor))
+                pitchDataSet.mode = .horizontalBezier
+                dataSets.append(pitchDataSet)
+            }
         }
 
-        for formantData in formantsData {
-            let formantDataSet = LineChartDataSet(entries: formantData)
-            formantDataSet.drawCirclesEnabled = false
-            formantDataSet.drawValuesEnabled = false
-            formantDataSet.drawIconsEnabled = false
-            formantDataSet.mode = .horizontalBezier
-            formantDataSet.lineWidth = Self.LINE_WIDTH
-            formantDataSet.lineDashLengths = [5, 5]
-            formantDataSet.setColor(UIColor(Color.accentColor))
-            dataSets.append(formantDataSet)
+        for formantDataSegments in formantsDataSegments {
+            for formantDataSegment in formantDataSegments {
+                let formantDataSet = LineChartDataSet(entries: formantDataSegment)
+                formantDataSet.drawCirclesEnabled = false
+                formantDataSet.drawValuesEnabled = false
+                formantDataSet.drawIconsEnabled = false
+                formantDataSet.mode = .horizontalBezier
+                formantDataSet.lineWidth = Self.LINE_WIDTH
+                formantDataSet.lineDashLengths = [5, 5]
+                formantDataSet.setColor(UIColor(Color.accentColor))
+                dataSets.append(formantDataSet)
+            }
         }
 
         if dataSets.isEmpty {
@@ -138,8 +146,9 @@ struct PitchChart: UIViewRepresentable {
     }
 
     func updateHighlight(chart: UIViewType) {
-        if let highlightedFrameIndex = highlightedFrameIndex {
-            chart.highlightValue(x: Double(highlightedFrameIndex), dataSetIndex: 0, callDelegate: false)
+        if let highlightedFrameIndex = highlightedFrameIndex,
+           let pitchDataSegmentIndex = pitchDataSegments.findSegmentIndex(for: Int(highlightedFrameIndex)) {
+            chart.highlightValue(x: Double(highlightedFrameIndex), dataSetIndex: pitchDataSegmentIndex, callDelegate: false)
         } else {
             chart.highlightValue(nil)
         }
@@ -168,5 +177,35 @@ class HzValueFormatter: IAxisValueFormatter {
         let noteDescription = musicalPitch.closestNote().description()
         let intHzValue = Int(musicalPitch.hz())
         return "~\(noteDescription) (\(intHzValue)Hz)"
+    }
+}
+
+extension Sequence where Element: Collection {
+    func findSegmentIndex(for elementIndex: Int) -> Int? {
+        var runningLength = 0
+        for (segmentIndex, segment) in self.enumerated() {
+            runningLength += segment.count
+            if elementIndex < runningLength {
+                return segmentIndex
+            }
+        }
+        return nil
+    }
+}
+
+extension Sequence {
+    func group(by shouldGroupTogether: (_ prev: Element, _ next: Element) -> Bool) -> [[Element]] {
+        var iter = makeIterator()
+        var groups: [[Element]] = []
+        var nextGroup: [Element] = []
+        while let next = iter.next() {
+            if let prev = nextGroup.last, !shouldGroupTogether(prev, next) {
+                groups.append(nextGroup)
+                nextGroup = []
+            }
+            nextGroup.append(next)
+        }
+        groups.append(nextGroup)
+        return groups
     }
 }
