@@ -22,6 +22,8 @@ struct ActivityView: UIViewControllerRepresentable {
         var applicationActivities: [UIActivity]? = nil
         var isPresented: Binding<Bool>
 
+        private var presentedActivityView: UIActivityViewController?
+
         init(activityItems: [Any], applicationActivities: [UIActivity]?, isPresented: Binding<Bool>) {
             self.activityItems = activityItems
             self.applicationActivities = applicationActivities
@@ -39,7 +41,7 @@ struct ActivityView: UIViewControllerRepresentable {
         }
 
         func update() {
-            let isPresented = presentedViewController != nil
+            let isPresented = presentedViewController != nil && presentedViewController == presentedActivityView
             if isPresented != self.isPresented.wrappedValue {
                 if !isPresented {
                     let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
@@ -47,9 +49,11 @@ struct ActivityView: UIViewControllerRepresentable {
                     controller.completionWithItemsHandler = { (_, _, _, _) in self.isPresented.wrappedValue = false }
                     controller.popoverPresentationController?.sourceView = view
 
+                    presentedActivityView = controller
                     present(controller, animated: true)
                 } else {
-                    presentedViewController?.dismiss(animated: true)
+                    presentedActivityView?.dismiss(animated: true)
+                    presentedActivityView = nil
                 }
             }
         }
