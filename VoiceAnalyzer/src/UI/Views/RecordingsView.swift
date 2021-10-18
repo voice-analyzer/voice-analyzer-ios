@@ -11,14 +11,28 @@ struct RecordingsView: View {
     @State private var selectedRecordingIndices: Set<Int> = Set()
     @State private var expandedRecordingId: Int64?
     @State private var pitchChartActive: Bool = false
+    @State private var shareSheetPresented: Bool = false
+    @State private var shareSheetActivityItems: [Any] = []
 
     var body: some View {
+        Group {
+            recordingsList
+            activityView
+        }
+    }
+    var recordingsList: some View {
         List(selection: $selectedRecordingIndices) {
             ForEach(Array(recordings.enumerated()), id: \.1.unwrappedId) { (index, recording) in
                 let expanded: RecordingRow.ExpansionState = recording.id == expandedRecordingId ?
                     .expanded(RecordingRow.ExpandedState(pitchChartActive: $pitchChartActive)) :
                     .collapsed
-                RecordingRow(recording: recording, expanded: expanded, playback: playback)
+                RecordingRow(
+                    recording: recording,
+                    expanded: expanded,
+                    playback: playback,
+                    shareSheetActivityItems: $shareSheetActivityItems,
+                    shareSheetPresented: $shareSheetPresented
+                )
                     .tag(index)
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -69,6 +83,26 @@ struct RecordingsView: View {
         }
     }
 
+    private var activityView: some View {
+        ActivityView(
+            activityItems: shareSheetActivityItems,
+            applicationActivities: [
+                Activity(title: "View Recording Details", image: UIImage(systemName: "waveform")) {
+                    shareSheetPresented = false
+                    pitchChartActive = true
+                },
+                Activity(title: "Delete", image: UIImage(systemName: "trash")) {
+                    shareSheetPresented = false
+                    if let expandedRecordingId = expandedRecordingId {
+                        deleteRecording(id: expandedRecordingId)
+                    }
+                }
+            ],
+            isPresented: $shareSheetPresented
+        )
+        .frame(width: 0, height: 0)
+    }
+
     private var editingDeleteButton: some View {
         Button {
             deleteRecordings(at: selectedRecordingIndices)
@@ -78,6 +112,12 @@ struct RecordingsView: View {
             Text("Delete")
         }
         .environment(\.isEnabled, !selectedRecordingIndices.isEmpty)
+    }
+
+    private func deleteRecording(id: Int64) {
+        if let recording = recordings.first(where: { recording in recording.id == id }) {
+            deleteRecordings(recordings: AnyCollection([recording]))
+        }
     }
 
     private func deleteRecordings<C: Collection>(at indices: C) where C.Element: BinaryInteger {
@@ -143,12 +183,15 @@ private struct RecordingRow: View {
     let recording: DatabaseRecords.Recording
     let expanded: ExpansionState
     @ObservedObject var playback: VoicePlaybackModel
+    @Binding var shareSheetActivityItems: [Any]
+    @Binding var shareSheetPresented: Bool
 
     @Environment(\.env) private var env: AppEnvironment
     @Environment(\.editMode) private var editMode: Binding<EditMode>?
     @State private var sliderPausedPlayback: Bool = false
     @State private var name: String
     private let initialName: String
+    private let url: URL?
 
     private var seekAmount: UInt {
         switch UInt(recording.length) {
@@ -167,12 +210,30 @@ private struct RecordingRow: View {
         if case .expanded(_) = expanded { return true } else { return false }
     }
 
-    init(recording: DatabaseRecords.Recording, expanded: ExpansionState, playback: VoicePlaybackModel) {
+    init(
+        recording: DatabaseRecords.Recording,
+        expanded: ExpansionState,
+        playback: VoicePlaybackModel,
+        shareSheetActivityItems: Binding<[Any]>,
+        shareSheetPresented: Binding<Bool>
+    ) {
         self.recording = recording
         self.expanded = expanded
         self.playback = playback
+        if let filename = recording.filename {
+            do {
+                url = try AppFilesystem.appRecordingDirectory().appendingPathComponent(filename)
+            } catch {
+                os_log("error calculating path for recording file: %@", error.localizedDescription)
+                url = nil
+            }
+        } else {
+            url = nil
+        }
         initialName = recording.name ?? "Untitled Recording"
         _name = State(initialValue: initialName)
+        _shareSheetActivityItems = shareSheetActivityItems
+        _shareSheetPresented = shareSheetPresented
     }
 
     var formattedRecordingFileSize: String? {
@@ -247,6 +308,10 @@ private struct RecordingRow: View {
 
     var buttonsRow: some View {
         ZStack(alignment: .center) {
+            HStack {
+                shareButton
+                Spacer()
+            }
             mediaButtons
             HStack {
                 Spacer()
@@ -255,6 +320,20 @@ private struct RecordingRow: View {
         }
         .buttonStyle(PlainButtonStyle())
         .font(.system(size: 24))
+    }
+
+    var shareButton: some View {
+        Button {
+            if let url = url {
+                shareSheetActivityItems = [url]
+                shareSheetPresented = true
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .foregroundColor(.accentColor)
+        }
+        .disabled(url == nil)
+        .imageScale(.medium)
     }
 
     var mediaButtons: some View {
@@ -296,6 +375,7 @@ private struct RecordingRow: View {
             }
         } label: {
             Image(systemName: "waveform")
+                .foregroundColor(.accentColor)
         }
         .imageScale(.medium)
     }
