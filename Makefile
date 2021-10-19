@@ -58,6 +58,9 @@ RUST_TARGETS = $(strip $(if $(RUST_ARCHS), \
 ifeq ($(CONFIGURATION),App Store Release)
 RUST_CONFIGURATION = release
 RUST_CONFIGURATION_FLAG = --release
+else ifeq ($(CONFIGURATION),Testable Release)
+RUST_CONFIGURATION = release
+RUST_CONFIGURATION_FLAG = --release
 else ifeq ($(strip $(filter-out Debug,$(CONFIGURATION))),)
 RUST_CONFIGURATION = debug
 RUST_CONFIGURATION_FLAG =
