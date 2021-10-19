@@ -3,22 +3,26 @@ import Foundation
 struct MusicalPitch {
     static let A0_HZ = 27.5
 
+    static let MIN_VALUE = -2.0
+    static let MAX_VALUE = 10.0
+
     /// Logarithmic-scale frequency, where A0 = 0.0, A1 = 1.0, ...
     let value: Double
 
-    init(value: Double) {
+    init?(value: Double) {
+        guard (Self.MIN_VALUE...Self.MAX_VALUE).contains(value) else { return nil }
         self.value = value
     }
 
-    init(fromHz hz: Double) {
-        value = log2(hz / Self.A0_HZ)
+    init?(fromHz hz: Double) {
+        self.init(value: log2(hz / Self.A0_HZ))
     }
 
     func closestNote() -> MusicalNote {
         let a0BasedIndex = Int(round(Double(MusicalNote.NAMES.count) * value))
         let c0BasedIndex = 9 + a0BasedIndex
         return MusicalNote(
-            note: UInt8(c0BasedIndex % MusicalNote.NAMES.count),
+            note: modulo(c0BasedIndex, modulus: UInt8(MusicalNote.NAMES.count)),
             octave: c0BasedIndex / 12
         )
     }
@@ -52,6 +56,11 @@ struct MusicalNote {
     func pitch() -> MusicalPitch {
         let c0BasedIndex = Int(note) + octave * 12
         let a0BasedIndex = c0BasedIndex - 9
-        return MusicalPitch(value: Double(a0BasedIndex) / 12.0)
+        return MusicalPitch(value: Double(a0BasedIndex) / 12.0)!
     }
+}
+
+func modulo<X: SignedInteger, M: UnsignedInteger>(_ x: X, modulus: M) -> M {
+    let remainder = x % X(modulus)
+    return remainder < 0 ? M(remainder + X(modulus)) : M(remainder)
 }

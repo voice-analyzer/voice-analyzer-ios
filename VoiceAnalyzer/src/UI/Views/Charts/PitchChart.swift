@@ -38,7 +38,10 @@ struct PitchChart: UIViewRepresentable {
         pitchDataSegments = voicedFrames
             .enumerated()
             .lazy
-            .map { index, frame in ChartDataEntry(x: Double(index), y: MusicalPitch(fromHz: Double(frame.pitchFrequency)).value) }
+            .compactMap { index, frame in
+                guard let musicalPitch = MusicalPitch(fromHz: Double(frame.pitchFrequency)) else { return nil }
+                return ChartDataEntry(x: Double(index), y: musicalPitch.value)
+            }
             .group { a, b in abs(a.y - b.y) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y }
 
         var formantsData: [[ChartDataEntry]] = []
@@ -48,9 +51,11 @@ struct PitchChart: UIViewRepresentable {
                 formantsData.append(contentsOf: Array(repeating: [], count: frameFormants.count - formantsData.count))
             }
             for (formantIndex, formant) in frameFormants.enumerated() {
-                if formant > Float(Self.MINIMUM_PITCH) && formant < Float(Self.MAXIMUM_PITCH) {
+                if formant > Float(Self.MINIMUM_PITCH) && formant < Float(Self.MAXIMUM_PITCH),
+                   let formantMusicalPitch = MusicalPitch(fromHz: Double(formant))
+                {
                     formantsData[formantIndex]
-                        .append(ChartDataEntry(x: Double(frameIndex), y: (Double(MusicalPitch(fromHz: Double(formant)).value))))
+                        .append(ChartDataEntry(x: Double(frameIndex), y: formantMusicalPitch.value))
                 }
             }
         }
@@ -61,14 +66,21 @@ struct PitchChart: UIViewRepresentable {
     func makeUIView(context: Context) -> UIViewType {
         let chart = UIViewType()
         chart.legend.enabled = false
+
         chart.xAxis.drawGridLinesEnabled = false
         chart.xAxis.drawLabelsEnabled = false
+
         chart.leftAxis.valueFormatter = HzValueFormatter()
-        chart.leftAxis.axisMinimum = MusicalPitch(fromHz: Self.MINIMUM_PITCH).value
-        chart.leftAxis.axisMaximum = MusicalPitch(fromHz: Self.MAXIMUM_PITCH).value
+        chart.leftAxis.axisMinimum = MusicalPitch(fromHz: Self.MINIMUM_PITCH)!.value
+        chart.leftAxis.axisMaximum = MusicalPitch(fromHz: Self.MAXIMUM_PITCH)!.value
         chart.leftAxis.drawLimitLinesBehindDataEnabled = true
         chart.leftAxis.labelCount = 8
+
         chart.rightAxis.enabled = false
+        // work around Charts crash on clearing data when zoomed in
+        chart.rightAxis.axisMinimum = 0
+        chart.rightAxis.axisMaximum = 1
+
         chart.delegate = context.coordinator
 
         updateDataSet(chart: chart)
@@ -122,16 +134,18 @@ struct PitchChart: UIViewRepresentable {
     }
 
     func updateLimitLines(chart: UIViewType) {
-        if let lowerLimitLine = limitLines.lower {
-            let lowerLimitLinePitch = MusicalPitch(fromHz: lowerLimitLine)
+        if let lowerLimitLine = limitLines.lower,
+           let lowerLimitLinePitch = MusicalPitch(fromHz: lowerLimitLine)
+        {
             chart.leftAxis.addLimitLine(ChartLimitLine(
                 limit: lowerLimitLinePitch.value,
                 label: lowerLimitLinePitch.closestNote().description()
             ))
         }
 
-        if let upperLimitLine = limitLines.upper {
-            let upperLimitLinePitch = MusicalPitch(fromHz: upperLimitLine)
+        if let upperLimitLine = limitLines.upper,
+           let upperLimitLinePitch = MusicalPitch(fromHz: upperLimitLine)
+        {
             chart.leftAxis.addLimitLine(ChartLimitLine(
                 limit: upperLimitLinePitch.value,
                 label: upperLimitLinePitch.closestNote().description()
@@ -173,7 +187,7 @@ struct PitchChart: UIViewRepresentable {
 
 class HzValueFormatter: IAxisValueFormatter {
     func stringForValue(_ value: Double, axis: AxisBase?) -> String {
-        let musicalPitch = MusicalPitch(value: value)
+        guard let musicalPitch = MusicalPitch(value: value) else { return "" }
         let noteDescription = musicalPitch.closestNote().description()
         let intHzValue = Int(musicalPitch.hz())
         return "~\(noteDescription) (\(intHzValue)Hz)"
