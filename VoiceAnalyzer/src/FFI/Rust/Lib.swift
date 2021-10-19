@@ -32,4 +32,8 @@ public class Analyzer {
     public func process(samples: UnsafePointer<Float>, samplesLen: UInt) -> AnalyzerOutput {
         voice_analyzer_rust_analyzer_process(analyzer, samples, samplesLen)
     }
+
+    public func reset() {
+        voice_analyzer_rust_analyzer_reset(analyzer)
+    }
 }

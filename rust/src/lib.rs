@@ -84,6 +84,15 @@ pub extern "C" fn voice_analyzer_rust_analyzer_process(
 }
 
 #[no_mangle]
+pub extern "C" fn voice_analyzer_rust_analyzer_reset(mut p_analyzer: Option<NonNull<AnalyzerState>>) {
+    logger::set_logger();
+    let analyzer = p_analyzer.as_mut().map(|p_analyzer| unsafe { p_analyzer.as_mut() });
+    if let Some(analyzer) = analyzer {
+        analyzer.0.reset();
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn voice_analyzer_rust_analyzer_drop(mut p_analyzer: Option<NonNull<AnalyzerState>>) {
     logger::set_logger();
     let _analyzer = p_analyzer.as_mut().map(|p_analyzer| unsafe { Box::from_raw(p_analyzer.as_ptr()) });

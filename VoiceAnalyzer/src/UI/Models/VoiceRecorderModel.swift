@@ -38,15 +38,17 @@ class VoiceRecorderModel: ObservableObject {
         let audioPacketProcessor = AudioPacketProcessor()
         let audioPackets = PassthroughSubject<AudioPacket, Never>()
         let audioPacketsSink = audioPackets
-            .buffer(size: 5, prefetch: .keepFull, whenFull: .dropOldest)
+            .buffer(size: 5, prefetch: .byRequest, whenFull: .dropOldest)
             .receive(on: processorQueue)
             .sink { packet in audioPacketProcessor.process(packet: packet, env: env, recording: recording) }
 
         let engine = AVAudioEngine()
         let inputFormat = engine.inputNode.outputFormat(forBus: 0)
+        var sequenceNumber: UInt64 = 0
         engine.inputNode.installTap(onBus: 0, bufferSize: 512, format: inputFormat) { (buffer, time) in
             let data = Array(UnsafeBufferPointer(start: buffer.floatChannelData!.pointee, count: Int(buffer.frameLength)))
-            audioPackets.send(AudioPacket(data: data, format: buffer.format, time: time))
+            audioPackets.send(AudioPacket(sequenceNumber: sequenceNumber, data: data, format: buffer.format, time: time))
+            sequenceNumber += 1
         }
 
         recording.open()
@@ -68,6 +70,7 @@ class VoiceRecorderModel: ObservableObject {
 }
 
 private struct AudioPacket {
+    let sequenceNumber: UInt64
     let data: [Float]
     let format: AVAudioFormat
     let time: AVAudioTime
@@ -84,9 +87,17 @@ private class AudioPacketProcessor {
     }
 
     private var analyzerState: AnalyzerState?
+    private var nextSequenceNumber: UInt64 = 0
 
     func process(packet: AudioPacket, env: AppEnvironment, recording: VoiceRecordingModel) {
         let analyzer = prepareAnalyzer(sampleRate: packet.format.sampleRate, env: env)
+
+        if packet.sequenceNumber != nextSequenceNumber {
+            os_log("resetting analyzer due to %d missed packets", packet.sequenceNumber - nextSequenceNumber)
+            analyzer.reset()
+            nextSequenceNumber = packet.sequenceNumber
+        }
+        nextSequenceNumber += 1
 
         recording.writeData(data: packet.data, sampleRate: packet.format.sampleRate, time: packet.time)
 

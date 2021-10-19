@@ -88,4 +88,11 @@ impl Analyzer {
             AnalyzerOutput::new(pitch, formants)
         })
     }
+
+    pub fn reset(&mut self) {
+        match &mut self.pitch_analyzer {
+            PitchAnalyzer::Irapt(irapt) => irapt.reset(),
+            PitchAnalyzer::Yin => (),
+        }
+    }
 }
