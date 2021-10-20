@@ -4,10 +4,28 @@ import Charts
 struct PitchChartLimitLines: Equatable {
     let lower: Double?
     let upper: Double?
+
+    init(lower: Double?, upper: Double?) {
+        self.lower = lower
+        self.upper = upper
+    }
+
+    init(_ first: Double?, _ second: Double?) {
+        switch (first, second) {
+        case (.some(let lower), .some(let upper)) where lower <= upper:
+            self.init(lower: lower, upper: upper)
+        case (.some(let upper), .some(let lower)):
+            self.init(lower: lower, upper: upper)
+        case (.some(let lower), .none), (.none, .some(let lower)):
+            self.init(lower: lower, upper: nil)
+        case (.none, .none):
+            self.init(lower: nil, upper: nil)
+        }
+    }
 }
 
 struct PitchChart: UIViewRepresentable {
-    typealias UIViewType = LineChartView
+    typealias UIViewType = UIPitchChart
 
     @Binding var highlightedFrameIndex: UInt?
     @Binding var limitLines: PitchChartLimitLines
@@ -16,8 +34,7 @@ struct PitchChart: UIViewRepresentable {
     private static let LINE_WIDTH = 3.0
     private static let MAX_LINE_SEGMENT_JUMP_IN_Y = 0.75
 
-    private static let MINIMUM_PITCH = 55.0
-    private static let MAXIMUM_PITCH = 1760.0
+    private static let PITCH_RANGE = 55.0 ... 1760.0
 
     private let pitchDataSegments: [[ChartDataEntry]]
     private let formantsDataSegments: [[[ChartDataEntry]]]
@@ -33,7 +50,7 @@ struct PitchChart: UIViewRepresentable {
         self.editingLimitLines = editingLimitLines
 
         let voicedFrames: [AnalysisFrame] = analysisFrames
-            .filter { frame in frame.pitchFrequency > Float(Self.MINIMUM_PITCH) && frame.pitchFrequency < Float(Self.MAXIMUM_PITCH) }
+            .filter { frame in Self.PITCH_RANGE.contains(Double(frame.pitchFrequency)) }
 
         pitchDataSegments = voicedFrames
             .enumerated()
@@ -51,7 +68,7 @@ struct PitchChart: UIViewRepresentable {
                 formantsData.append(contentsOf: Array(repeating: [], count: frameFormants.count - formantsData.count))
             }
             for (formantIndex, formant) in frameFormants.enumerated() {
-                if formant > Float(Self.MINIMUM_PITCH) && formant < Float(Self.MAXIMUM_PITCH),
+                if Self.PITCH_RANGE.contains(Double(formant)),
                    let formantMusicalPitch = MusicalPitch(fromHz: Double(formant))
                 {
                     formantsData[formantIndex]
@@ -71,9 +88,8 @@ struct PitchChart: UIViewRepresentable {
         chart.xAxis.drawLabelsEnabled = false
 
         chart.leftAxis.valueFormatter = HzValueFormatter()
-        chart.leftAxis.axisMinimum = MusicalPitch(fromHz: Self.MINIMUM_PITCH)!.value
-        chart.leftAxis.axisMaximum = MusicalPitch(fromHz: Self.MAXIMUM_PITCH)!.value
-        chart.leftAxis.drawLimitLinesBehindDataEnabled = true
+        chart.leftAxis.axisMinimum = MusicalPitch(fromHz: Self.PITCH_RANGE.lowerBound)!.value
+        chart.leftAxis.axisMaximum = MusicalPitch(fromHz: Self.PITCH_RANGE.upperBound)!.value
         chart.leftAxis.labelCount = 8
 
         chart.rightAxis.enabled = false
@@ -83,7 +99,14 @@ struct PitchChart: UIViewRepresentable {
 
         chart.delegate = context.coordinator
 
+        chart.panGestureRecognizer = UIPanGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.panGestureRecognized(_:))
+        )
+
         updateDataSet(chart: chart)
+        updateLimitLines(chart: chart)
+        updateHighlight(chart: chart)
         return chart
     }
 
@@ -95,6 +118,8 @@ struct PitchChart: UIViewRepresentable {
     }
 
     func updateDataSet(chart: UIViewType) {
+        let lineColor = editingLimitLines ? chart.leftAxis.axisLineColor.withAlphaComponent(0.5) : UIColor(.accentColor)
+
         var dataSets: [LineChartDataSet] = []
         if !pitchDataSegments.isEmpty {
             for pitchDataSegment in pitchDataSegments {
@@ -103,7 +128,7 @@ struct PitchChart: UIViewRepresentable {
                 pitchDataSet.drawValuesEnabled = false
                 pitchDataSet.drawIconsEnabled = false
                 pitchDataSet.lineWidth = Self.LINE_WIDTH
-                pitchDataSet.setColor(UIColor(Color.accentColor))
+                pitchDataSet.setColor(lineColor)
                 pitchDataSet.mode = .horizontalBezier
                 dataSets.append(pitchDataSet)
             }
@@ -118,7 +143,7 @@ struct PitchChart: UIViewRepresentable {
                 formantDataSet.mode = .horizontalBezier
                 formantDataSet.lineWidth = Self.LINE_WIDTH
                 formantDataSet.lineDashLengths = [5, 5]
-                formantDataSet.setColor(UIColor(Color.accentColor))
+                formantDataSet.setColor(lineColor)
                 dataSets.append(formantDataSet)
             }
         }
@@ -134,6 +159,8 @@ struct PitchChart: UIViewRepresentable {
     }
 
     func updateLimitLines(chart: UIViewType) {
+        chart.leftAxis.removeAllLimitLines()
+
         if let lowerLimitLine = limitLines.lower,
            let lowerLimitLinePitch = MusicalPitch(fromHz: lowerLimitLine)
         {
@@ -152,20 +179,41 @@ struct PitchChart: UIViewRepresentable {
             ))
         }
 
-        if editingLimitLines {
-            chart.isUserInteractionEnabled = false
-        } else {
-            chart.isUserInteractionEnabled = true
+        for limitLine in chart.leftAxis.limitLines {
+            if editingLimitLines {
+                limitLine.lineColor = UIColor(.accentColor)
+                limitLine.lineWidth = 5.0
+            } else {
+                limitLine.lineColor = chart.leftAxis.axisLineColor
+                limitLine.lineWidth = 3.0
+            }
         }
+
+        if editingLimitLines {
+            if chart.gestureRecognizers?.contains(chart.panGestureRecognizer!) != true {
+                chart.addGestureRecognizer(chart.panGestureRecognizer!)
+            }
+        } else {
+            chart.removeGestureRecognizer(chart.panGestureRecognizer!)
+        }
+        chart.leftAxis.drawLimitLinesBehindDataEnabled = !editingLimitLines
+        chart.dragEnabled = !editingLimitLines
     }
 
     func updateHighlight(chart: UIViewType) {
-        if let highlightedFrameIndex = highlightedFrameIndex,
+        if !editingLimitLines,
+           let highlightedFrameIndex = highlightedFrameIndex,
            let pitchDataSegmentIndex = pitchDataSegments.findSegmentIndex(for: Int(highlightedFrameIndex)) {
             chart.highlightValue(x: Double(highlightedFrameIndex), dataSetIndex: pitchDataSegmentIndex, callDelegate: false)
         } else {
             chart.highlightValue(nil)
         }
+    }
+
+    private func checkLimitLineTouched(chart: UIViewType, gestureY: Double, limitLine: Double) -> Bool {
+        guard let limitLinePitch = MusicalPitch(fromHz: limitLine) else { return false }
+        let limitLineY = chart.getTransformer(forAxis: .left).pixelForValues(x: 0, y: limitLinePitch.value).y
+        return abs(limitLineY - gestureY) < 30
     }
 
     func makeCoordinator() -> Coordinator {
@@ -175,6 +223,12 @@ struct PitchChart: UIViewRepresentable {
     class Coordinator: NSObject, ChartViewDelegate {
         let chart: PitchChart
 
+        enum LimitLineDragState {
+            case upper, lower
+        }
+
+        var limitLineDragState: LimitLineDragState?
+
         init(_ chart: PitchChart) {
             self.chart = chart
         }
@@ -182,7 +236,49 @@ struct PitchChart: UIViewRepresentable {
         func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
             chart.highlightedFrameIndex = UInt(entry.x)
         }
+
+        @objc func panGestureRecognized(_ recognizer: UIPanGestureRecognizer) {
+            guard let uiChart = recognizer.view as? UIViewType else { return }
+
+            let gestureY = recognizer.location(in: uiChart).y
+            let gestureChartY = uiChart.getTransformer(forAxis: .left).valueForTouchPoint(x: 0, y: gestureY).y
+            let gestureChartHz = MusicalPitch(value: gestureChartY)?.hz()
+
+            switch (recognizer.state, limitLineDragState) {
+            case (.began, _):
+                let translateY = recognizer.translation(in: uiChart).y
+                let gestureStartY = gestureY - translateY
+                if let upperLimitLine = chart.limitLines.upper,
+                   chart.checkLimitLineTouched(chart: uiChart, gestureY: gestureStartY, limitLine: upperLimitLine)
+                {
+                    limitLineDragState = .upper
+                } else if
+                    let lowerLimitLine = chart.limitLines.lower,
+                    chart.checkLimitLineTouched(chart: uiChart, gestureY: gestureStartY, limitLine: lowerLimitLine)
+                {
+                    limitLineDragState = .lower
+                } else {
+                    limitLineDragState = nil
+                }
+            case (.changed, .upper):
+                if let gestureChartHz = gestureChartHz, PitchChart.PITCH_RANGE.contains(gestureChartHz) {
+                    chart.limitLines = PitchChartLimitLines(lower: chart.limitLines.lower, upper: gestureChartHz)
+                }
+            case (.changed, .lower):
+                if let gestureChartHz = gestureChartHz, PitchChart.PITCH_RANGE.contains(gestureChartHz) {
+                    chart.limitLines = PitchChartLimitLines(lower: gestureChartHz, upper: chart.limitLines.upper)
+                }
+            case (.ended, .some(_)):
+                limitLineDragState = nil
+            default:
+                break
+            }
+        }
     }
+}
+
+class UIPitchChart: LineChartView {
+    internal var panGestureRecognizer: UIPanGestureRecognizer?
 }
 
 class HzValueFormatter: IAxisValueFormatter {

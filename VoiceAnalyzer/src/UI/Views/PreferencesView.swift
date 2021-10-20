@@ -3,6 +3,7 @@ import SwiftUI
 struct PreferencesView: View {
     @StateObject var preferences: AppPreferences
     @Binding var isPresented: Bool
+    @Binding var editingLimitLines: Bool
 
     var body: some View {
         NavigationView {
@@ -13,6 +14,9 @@ struct PreferencesView: View {
                     ToolbarItem(placement: .navigation) {
                         doneButton
                     }
+                }
+                .onAppear {
+                    editingLimitLines = false
                 }
         }
     }
@@ -33,6 +37,14 @@ struct PreferencesView: View {
                     Text("Formants are measure of vocal resonance, which vary depending on the speaker and the vowel being spoken.")
                         .font(.footnote)
                         .foregroundColor(.secondary)
+                }
+            }
+            Section {
+                Button {
+                    editingLimitLines = true
+                    isPresented = false
+                } label: {
+                    Text("Move Pitch Guide Lines")
                 }
             }
         }

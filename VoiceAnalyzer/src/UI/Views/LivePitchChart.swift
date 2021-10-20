@@ -7,7 +7,7 @@ struct LivePitchChart: View {
     @ObservedObject var voiceRecorder: VoiceRecorderModel
     @ObservedObject var voiceRecording: VoiceRecordingModel
     @Binding var analysisFrames: [AnalysisFrame]
-    @State var limitLines: PitchChartLimitLines
+    @State var limitLines: PitchChartLimitLines = PitchChartLimitLines(lower: nil, upper: nil)
 
     @Environment(\.env) var env: AppEnvironment
 
@@ -15,6 +15,7 @@ struct LivePitchChart: View {
     @State private var preferencesIsPresented = false
     @State private var highlightedFrameIndex: UInt? = nil
     @State private var editingLimitLines: Bool = false
+    @State private var editMode: EditMode = .inactive
 
     var body: some View {
         GeometryReader {
@@ -32,7 +33,35 @@ struct LivePitchChart: View {
             .navigationBarTitle("Pitch Estimation")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                if editingLimitLines {
+                    EditButton()
+                }
+            }
+        }
+        .environment(\.editMode, $editMode)
+        .onChange(of: editingLimitLines) { _ in
+            editMode = editingLimitLines ? .active : .inactive
+        }
+        .onChange(of: editMode) { _ in
+            if editMode == .inactive {
+                if editingLimitLines {
+                    if let lowerLimitLine = limitLines.lower {
+                        env.preferences.lowerLimitLine = lowerLimitLine
+                    }
+                    if let upperLimitLine = limitLines.upper {
+                        env.preferences.upperLimitLine = upperLimitLine
+                    }
+                    editingLimitLines = false
+                }
+            }
+        }
         .onAppear {
+            limitLines = PitchChartLimitLines(
+                lower: env.preferences.lowerLimitLine,
+                upper: env.preferences.upperLimitLine
+            )
             do {
                 try voiceRecorder.start(env: env, recording: voiceRecording)
                 isRecording = voiceRecorder.isRecording
@@ -93,7 +122,7 @@ struct LivePitchChart: View {
             Image(systemName: "gear")
         }
         .sheet(isPresented: $preferencesIsPresented) {
-            PreferencesView(preferences: env.preferences, isPresented: $preferencesIsPresented)
+            PreferencesView(preferences: env.preferences, isPresented: $preferencesIsPresented, editingLimitLines: $editingLimitLines)
         }
     }
 

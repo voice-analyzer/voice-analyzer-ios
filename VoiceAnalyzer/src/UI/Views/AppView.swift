@@ -32,11 +32,7 @@ struct AppView: View {
             isPresented: $livePitchChartIsPresented,
             voiceRecorder: voiceRecorder,
             voiceRecording: voiceRecording,
-            analysisFrames: $analysisFrames,
-            limitLines: PitchChartLimitLines(
-                lower: env.preferences.lowerLimitLine,
-                upper: env.preferences.upperLimitLine
-            )
+            analysisFrames: $analysisFrames
         )
             .onAppear {
                 recordingsVisible = true
