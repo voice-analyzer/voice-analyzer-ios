@@ -349,8 +349,8 @@
 			);
 			mainGroup = C881ABF0266BFF7C006F83D4;
 			packageReferences = (
-				C8E68C5F26E2880F003662A9 /* XCRemoteSwiftPackageReference "Charts.git" */,
-				C83971E126EA7530003030DC /* XCRemoteSwiftPackageReference "GRDB.swift.git" */,
+				C8E68C5F26E2880F003662A9 /* XCRemoteSwiftPackageReference "Charts" */,
+				C83971E126EA7530003030DC /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 			);
 			productRefGroup = C881ABFA266BFF7C006F83D4 /* Products */;
 			projectDirPath = "";
@@ -841,7 +841,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		C83971E126EA7530003030DC /* XCRemoteSwiftPackageReference "GRDB.swift.git" */ = {
+		C83971E126EA7530003030DC /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift.git";
 			requirement = {
@@ -849,7 +849,7 @@
 				minimumVersion = 5.11.0;
 			};
 		};
-		C8E68C5F26E2880F003662A9 /* XCRemoteSwiftPackageReference "Charts.git" */ = {
+		C8E68C5F26E2880F003662A9 /* XCRemoteSwiftPackageReference "Charts" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/danielgindi/Charts.git";
 			requirement = {
@@ -862,12 +862,12 @@
 /* Begin XCSwiftPackageProductDependency section */
 		C83971E226EA7530003030DC /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C83971E126EA7530003030DC /* XCRemoteSwiftPackageReference "GRDB.swift.git" */;
+			package = C83971E126EA7530003030DC /* XCRemoteSwiftPackageReference "GRDB.swift" */;
 			productName = GRDB;
 		};
 		C8E68C6026E2880F003662A9 /* Charts */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C8E68C5F26E2880F003662A9 /* XCRemoteSwiftPackageReference "Charts.git" */;
+			package = C8E68C5F26E2880F003662A9 /* XCRemoteSwiftPackageReference "Charts" */;
 			productName = Charts;
 		};
 /* End XCSwiftPackageProductDependency section */
