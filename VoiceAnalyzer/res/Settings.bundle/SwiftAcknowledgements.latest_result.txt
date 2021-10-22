@@ -1,7 +1,3 @@
-name: libsamplerate, nameSpecified: 
-body: Copyright (c) 2012-2…
-version: 0.1.9
-
 name: Charts, nameSpecified: Charts, owner: danielgindi, version: 3.6.0
 
 name: GRDB.swift, nameSpecified: GRDB, owner: groue, version: 5.12.0

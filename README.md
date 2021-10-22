@@ -9,11 +9,6 @@ GitHub is the project's bug tracker. Please [search](https://github.com/voice-an
 
 ## Building
 
-Initialize/update all git submodules:
-```
-$ make submodules
-```
-
 Make sure Rust version 1.56.0 or newer is installed with the desired toolchain targets. The Rust target names for the
 supported build targets are:
 

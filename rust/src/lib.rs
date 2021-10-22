@@ -2,7 +2,6 @@
 mod util;
 
 mod analyzer;
-mod ffi;
 mod logger;
 mod resample;
 mod yin;
