@@ -26,9 +26,6 @@ resdir ?= VoiceAnalyzer/res
 
 RUST_PACKAGE_NAME := voice-analyzer-rust
 RUST_LIBRARY_NAME := $(subst -,_,$(RUST_PACKAGE_NAME))
-RUST_NIGHTLY_TARGETS := $(strip \
-	aarch64-apple-ios-sim \
-)
 RUST_BUILD_STD_TARGETS := $(strip \
 	x86_64-apple-ios-macabi \
 	aarch64-apple-ios-macabi \
@@ -199,17 +196,11 @@ target/%/release/lib$(RUST_LIBRARY_NAME).a: FORCE
 		export RUSTC_BOOTSTRAP=1; \
 		RUST_BUILD_STD="-Z build-std"; \
 	fi; \
-	if [ '' $(foreach target,$(RUST_NIGHTLY_TARGETS),-o '$*' = '$(target)') ]; then \
-		CARGO_TOOLCHAIN="+nightly"; \
-	fi; \
 	$(CARGO) $${CARGO_TOOLCHAIN} build -p voice-analyzer-rust --release --target $* $${RUST_BUILD_STD}
 
 target/%/debug/lib$(RUST_LIBRARY_NAME).a: FORCE
 	if [ '' $(foreach target,$(RUST_BUILD_STD_TARGETS),-o '$*' = '$(target)') ]; then \
 		export RUSTC_BOOTSTRAP=1; \
 		RUST_BUILD_STD="-Z build-std"; \
-	fi; \
-	if [ '' $(foreach target,$(RUST_NIGHTLY_TARGETS),-o '$*' = '$(target)') ]; then \
-		CARGO_TOOLCHAIN="+nightly"; \
 	fi; \
 	$(CARGO) $${CARGO_TOOLCHAIN} build -p voice-analyzer-rust --target $* $${RUST_BUILD_STD}
