@@ -315,7 +315,9 @@ extension Sequence {
             }
             nextGroup.append(next)
         }
-        groups.append(nextGroup)
+        if !nextGroup.isEmpty {
+            groups.append(nextGroup)
+        }
         return groups
     }
 }
