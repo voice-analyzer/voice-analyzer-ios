@@ -1,7 +1,9 @@
 [package]
-name    = "formants"
-version = "0.1.0"
-edition = "2021"
+name       = "formants"
+version    = "0.1.0"
+edition    = "2021"
+license    = "Apache-2.0"
+repository = "https://github.com/in-formant/libformants"
 
 [dependencies]
 cty = "0.2"
