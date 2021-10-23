@@ -77,17 +77,19 @@ impl Analyzer {
             .map_err(|error| log::error!("error resampling audio: {}", error))
             .ok()?;
 
+        let downsampled = &mut self.downsampled;
+        let downsampled_rate = self.downsampled_rate;
         let pitch = match &mut self.pitch_analyzer {
-            PitchAnalyzer::Irapt(irapt) => iter::from_fn(|| irapt.process(&mut self.downsampled)).last().map(|pitch| Pitch {
+            PitchAnalyzer::Irapt(irapt) => iter::from_fn(|| irapt.process(downsampled)).last().map(|pitch| Pitch {
                 value: pitch.frequency as f32,
                 confidence: pitch.energy as f32,
             }),
             PitchAnalyzer::Yin => {
                 let max_len = usize::max(FORMANTS_LPC_LENGTH as usize, YIN_LENGTH as usize);
-                if let Some(remove_len) = self.downsampled.len().checked_sub(max_len) {
-                    self.downsampled.drain(..remove_len);
+                if let Some(remove_len) = downsampled.len().checked_sub(max_len) {
+                    downsampled.drain(..remove_len);
                 }
-                let pitch = yin::pitch(self.downsampled.make_contiguous(), self.downsampled_rate as u32, YIN_THRESHOLD);
+                let pitch = yin::pitch(downsampled.make_contiguous(), downsampled_rate as u32, YIN_THRESHOLD);
                 pitch
             }
         };
@@ -95,7 +97,7 @@ impl Analyzer {
         let formant_analyzer = self.formant_analyzer.as_mut();
         pitch.map(|pitch| {
             let formants = formant_analyzer.map(|formant_analyzer| {
-                formant_analyzer.analyze(self.downsampled.make_contiguous(), self.downsampled_rate as f32, FORMANTS_SAFETY_MARGIN)
+                formant_analyzer.analyze(downsampled.make_contiguous(), downsampled_rate as f32, FORMANTS_SAFETY_MARGIN)
             });
             AnalyzerOutput::new(pitch, formants)
         })
