@@ -34,7 +34,7 @@ struct PitchChart: UIViewRepresentable {
     private static let LINE_WIDTH = 3.0
     private static let MAX_LINE_SEGMENT_JUMP_IN_Y = 0.75
 
-    private static let PITCH_RANGE = 55.0 ... 1760.0
+    private static let PITCH_RANGE = 55.0 ... 880.0
 
     private let pitchDataSegments: [[ChartDataEntry]]
     private let formantsDataSegments: [[[ChartDataEntry]]]
