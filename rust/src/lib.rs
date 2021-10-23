@@ -106,8 +106,6 @@ impl AnalyzerOutput {
         let formants = formants
             .iter()
             .flat_map(AsRef::as_ref)
-            .filter(|formant| formant.frequency.is_normal())
-            .filter(|formant| formant.frequency > pitch.value * 1.5)
             .map(|formant| Formant {
                 frequency: formant.frequency as f32,
                 bandwidth: formant.bandwidth as f32,
