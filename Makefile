@@ -36,19 +36,22 @@ RUST_BUILD_STD_TARGETS := $(strip \
 #
 
 RUST_ARCHS = $(subst arm64,aarch64,$(ARCHS))
-RUST_PLATFORM_NAME = $(strip \
-	$(subst iphoneos,apple-ios, \
-	$(subst iphonesimulator,apple-ios-sim, \
-	$(subst macosx,apple-darwin, \
-		$(PLATFORM_NAME)))) \
-)
 RUST_ALL_TARGETS = $(strip \
 	x86_64-apple-ios \
 	aarch64-apple-ios \
 	aarch64-apple-ios-sim \
 )
 RUST_TARGETS = $(strip $(if $(RUST_ARCHS), \
-	$(foreach arch,$(RUST_ARCHS),$(arch)-$(RUST_PLATFORM_NAME)), \
+	$(foreach arch,$(RUST_ARCHS),$(arch)-$(strip \
+		$(subst iphoneos,apple-ios, \
+		$(subst iphonesimulator, \
+			$(if $(subst aarch64,,$(arch)), \
+				apple-ios, \
+				apple-ios-sim \
+			), \
+		$(subst macosx,apple-darwin, \
+			$(PLATFORM_NAME)))) \
+	)), \
 	$(RUST_ALL_TARGETS) \
 ))
 
