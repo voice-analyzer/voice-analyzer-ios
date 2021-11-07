@@ -49,8 +49,13 @@ class VoiceRecordingModel: ObservableObject {
     static let HEADER_LENGTH: UInt = WaveHeader.encodedLength(dataFormat: .IEEEFloat)
 
     enum FramesUpdate {
-        case append(AnalysisFrame)
+        case append(Append)
         case clear
+
+        struct Append {
+            let frame: AnalysisFrame
+            let tentativeFrames: [AnalysisFrame]
+        }
     }
 
     let frames = PassthroughSubject<FramesUpdate, Never>()
@@ -166,7 +171,7 @@ class VoiceRecordingModel: ObservableObject {
         }
     }
 
-    func writeData(data: [Float], sampleRate: Double, time: AVAudioTime) {
+    func writeData(data: [Float], sampleRate: Double) {
         dispatchPrecondition(condition: .notOnQueue(dispatchQueue))
 
         dispatchQueue.sync {
@@ -207,16 +212,30 @@ class VoiceRecordingModel: ObservableObject {
         dispatchQueue.sync {
             guard let recordingFile = recordingFile else { return }
             guard let sampleRate = recordingFile.sampleRate else { return }
+            guard let firstPitch = Array(output.pitches.prefix(1)).first else { return }
+
             let timeInSeconds = Float(recordingFile.samples) / Float(sampleRate)
+
             let frame = AnalysisFrame(
-                time: timeInSeconds,
-                pitchFrequency: output.pitch.value,
-                pitchConfidence: output.pitch.confidence,
+                time: timeInSeconds + Float(firstPitch.time),
+                pitchFrequency: firstPitch.value,
+                pitchConfidence: firstPitch.confidence,
                 firstFormantFrequency: nonZeroFloat(output.formants.0.frequency),
                 secondFormantFrequency: nonZeroFloat(output.formants.1.frequency)
             )
+
+            let tentativeFrames = output.pitches.dropFirst().compactMap { pitch in
+                AnalysisFrame(
+                    time: timeInSeconds + Float(pitch.time),
+                    pitchFrequency: pitch.value,
+                    pitchConfidence: pitch.confidence,
+                    firstFormantFrequency: nil,
+                    secondFormantFrequency: nil
+                )
+            }
+
             databaseFrames.append(frame.databaseRecord)
-            frames.send(.append(frame))
+            frames.send(.append(.init(frame: frame, tentativeFrames: tentativeFrames)))
         }
     }
 

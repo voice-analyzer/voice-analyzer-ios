@@ -11,6 +11,7 @@ struct AppView: View {
     @StateObject private var voiceRecorder = VoiceRecorderModel()
     @StateObject private var voiceRecording = VoiceRecordingModel()
     @State private var analysisFrames: [AnalysisFrame] = []
+    @State private var tentativeAnalysisFrames: [AnalysisFrame] = []
 
     var body: some View {
         NavigationView {
@@ -32,7 +33,8 @@ struct AppView: View {
             isPresented: $livePitchChartIsPresented,
             voiceRecorder: voiceRecorder,
             voiceRecording: voiceRecording,
-            analysisFrames: $analysisFrames
+            analysisFrames: $analysisFrames,
+            tentativeAnalysisFrames: $tentativeAnalysisFrames
         )
             .onAppear {
                 recordingsVisible = true

@@ -47,7 +47,7 @@ class VoiceRecorderModel: ObservableObject {
         var sequenceNumber: UInt64 = 0
         engine.inputNode.installTap(onBus: 0, bufferSize: 512, format: inputFormat) { (buffer, time) in
             let data = Array(UnsafeBufferPointer(start: buffer.floatChannelData!.pointee, count: Int(buffer.frameLength)))
-            audioPackets.send(AudioPacket(sequenceNumber: sequenceNumber, data: data, format: buffer.format, time: time))
+            audioPackets.send(AudioPacket(sequenceNumber: sequenceNumber, data: data, format: buffer.format))
             sequenceNumber += 1
         }
 
@@ -73,12 +73,9 @@ private struct AudioPacket {
     let sequenceNumber: UInt64
     let data: [Float]
     let format: AVAudioFormat
-    let time: AVAudioTime
 }
 
 private class AudioPacketProcessor {
-    static let CONFIDENCE_THRESHOLD: Float = 0.20
-
     private struct AnalyzerState {
         var analyzer: Analyzer
         var sampleRate: Float64
@@ -99,7 +96,7 @@ private class AudioPacketProcessor {
         }
         nextSequenceNumber += 1
 
-        recording.writeData(data: packet.data, sampleRate: packet.format.sampleRate, time: packet.time)
+        recording.writeData(data: packet.data, sampleRate: packet.format.sampleRate)
 
         let output = packet.data.withUnsafeBufferPointer { buffer -> AnalyzerOutput? in
             guard let baseAddress = buffer.baseAddress else { return nil }
@@ -108,7 +105,7 @@ private class AudioPacketProcessor {
                 samplesLen: UInt(buffer.count)
             )
         }
-        if let output = output, output.pitch.confidence > Self.CONFIDENCE_THRESHOLD {
+        if let output = output {
             recording.appendFrame(output: output)
         }
     }

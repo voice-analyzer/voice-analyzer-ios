@@ -7,6 +7,7 @@ mod resample;
 mod yin;
 
 use core::ptr::NonNull;
+use std::mem::ManuallyDrop;
 
 use analyzer::Analyzer;
 use itertools::Itertools;
@@ -32,10 +33,12 @@ pub enum FormantEstimationAlgorithm {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Default)]
+#[derive(Default)]
 pub struct AnalyzerOutput {
-    pub pitch:    Pitch,
-    pub formants: [Formant; FORMANT_COUNT],
+    pub pitches:          Option<NonNull<Pitch>>,
+    pub pitches_len:      usize,
+    pub pitches_capacity: usize,
+    pub formants:         [Formant; FORMANT_COUNT],
 }
 
 #[repr(C)]
@@ -43,6 +46,7 @@ pub struct AnalyzerOutput {
 pub struct Pitch {
     pub value:      f32,
     pub confidence: f32,
+    pub time:       f64,
 }
 
 #[repr(C)]
@@ -83,6 +87,11 @@ pub extern "C" fn voice_analyzer_rust_analyzer_process(
 }
 
 #[no_mangle]
+pub extern "C" fn voice_analyzer_rust_analyzer_output_drop(_output: AnalyzerOutput) {
+    logger::set_logger();
+}
+
+#[no_mangle]
 pub extern "C" fn voice_analyzer_rust_analyzer_reset(mut p_analyzer: Option<NonNull<AnalyzerState>>) {
     logger::set_logger();
     let analyzer = p_analyzer.as_mut().map(|p_analyzer| unsafe { p_analyzer.as_mut() });
@@ -98,11 +107,15 @@ pub extern "C" fn voice_analyzer_rust_analyzer_drop(mut p_analyzer: Option<NonNu
 }
 
 //
-// Formants impls
+// AnalyzerOutput impls
 //
 
 impl AnalyzerOutput {
-    pub fn new(pitch: Pitch, formants: Option<formants::Formants>) -> Self {
+    pub fn new(pitches: Vec<Pitch>, formants: Option<formants::Formants>) -> Self {
+        let mut pitches = ManuallyDrop::new(pitches);
+        let pitches_len = pitches.len();
+        let pitches_capacity = pitches.capacity();
+        let pitches = NonNull::new(pitches.as_mut_ptr());
         let formants = formants
             .iter()
             .flat_map(AsRef::as_ref)
@@ -110,8 +123,18 @@ impl AnalyzerOutput {
                 frequency: formant.frequency as f32,
                 bandwidth: formant.bandwidth as f32,
             });
-        let mut new_self = Self { pitch, ..<_>::default() };
+        let mut new_self = Self { pitches, pitches_len, pitches_capacity, formants: Default::default() };
         new_self.formants.iter_mut().set_from(formants);
         new_self
+    }
+}
+
+impl Drop for AnalyzerOutput {
+    fn drop(&mut self) {
+        let pitches_len = self.pitches_len;
+        let pitches_capacity = self.pitches_capacity;
+        let _pitches = self.pitches.as_mut().map(|p_pitches| unsafe {
+            Vec::from_raw_parts(p_pitches.as_ptr(), pitches_len, pitches_capacity)
+        });
     }
 }

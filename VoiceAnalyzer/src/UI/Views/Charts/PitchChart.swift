@@ -35,12 +35,15 @@ struct PitchChart: UIViewRepresentable {
     private static let MAX_LINE_SEGMENT_JUMP_IN_Y = 0.75
 
     private static let PITCH_RANGE = 55.0 ... 880.0
+    private static let CONFIDENCE_THRESHOLD: Float = 0.20
 
     private let pitchDataSegments: [[ChartDataEntry]]
+    private let tentativePitchDataSegments: [[ChartDataEntry]]
     private let formantsDataSegments: [[[ChartDataEntry]]]
 
     init(
         analysisFrames: [AnalysisFrame],
+        tentativeAnalysisFrames: [AnalysisFrame],
         highlightedFrameIndex: Binding<UInt?>,
         limitLines: Binding<PitchChartLimitLines>,
         editingLimitLines: Bool
@@ -49,12 +52,13 @@ struct PitchChart: UIViewRepresentable {
         _limitLines = limitLines
         self.editingLimitLines = editingLimitLines
 
-        let voicedFrames: [AnalysisFrame] = analysisFrames
+        let voicedFrames = analysisFrames
+            .lazy
+            .filter { frame in frame.pitchConfidence > Self.CONFIDENCE_THRESHOLD }
             .filter { frame in Self.PITCH_RANGE.contains(Double(frame.pitchFrequency)) }
+            .enumerated()
 
         pitchDataSegments = voicedFrames
-            .enumerated()
-            .lazy
             .compactMap { index, frame in
                 guard let musicalPitch = MusicalPitch(fromHz: Double(frame.pitchFrequency)) else { return nil }
                 return ChartDataEntry(x: Double(index), y: musicalPitch.value)
@@ -62,7 +66,7 @@ struct PitchChart: UIViewRepresentable {
             .group { a, b in abs(a.y - b.y) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y }
 
         var formantsData: [[ChartDataEntry]] = []
-        for (frameIndex, frame) in voicedFrames.enumerated() {
+        for (frameIndex, frame) in voicedFrames {
             let frameFormants = frame.formantFrequencies
             if frameFormants.count > formantsData.count {
                 formantsData.append(contentsOf: Array(repeating: [], count: frameFormants.count - formantsData.count))
@@ -78,6 +82,23 @@ struct PitchChart: UIViewRepresentable {
         }
         formantsDataSegments = formantsData
             .map { formantData in formantData.group { a, b in abs(a.y - b.y) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y } }
+
+        let lastPitchDataEntry = pitchDataSegments.last?.last
+        let tentativePitchDataStartX = (lastPitchDataEntry?.x).map { x in Double(x) } ?? 0.0
+        let tentativePitchDataEntries = tentativeAnalysisFrames
+            .lazy
+            .enumerated()
+            .map { index, frame -> ChartDataEntry in
+                let musicalPitch = MusicalPitch(fromHz: Double(frame.pitchFrequency).clamped(Self.PITCH_RANGE))!
+                return ChartDataEntry(
+                    x: tentativePitchDataStartX + Double(index) / Double(tentativeAnalysisFrames.count),
+                    y: musicalPitch.value
+                )
+            }
+        tentativePitchDataSegments = [AnySequence([lastPitchDataEntry].compactMap { $0 }), AnySequence(tentativePitchDataEntries)]
+            .lazy
+            .joined()
+            .group { a, b in abs(a.y - b.y) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y }
     }
 
     func makeUIView(context: Context) -> UIViewType {
@@ -132,6 +153,17 @@ struct PitchChart: UIViewRepresentable {
                 pitchDataSet.mode = .horizontalBezier
                 dataSets.append(pitchDataSet)
             }
+        }
+
+        for tentativePitchDataSegment in tentativePitchDataSegments {
+            let tentativePitchDataSet = LineChartDataSet(entries: tentativePitchDataSegment)
+            tentativePitchDataSet.drawCirclesEnabled = false
+            tentativePitchDataSet.drawValuesEnabled = false
+            tentativePitchDataSet.drawIconsEnabled = false
+            tentativePitchDataSet.lineWidth = Self.LINE_WIDTH
+            tentativePitchDataSet.setColor(lineColor.withAlphaComponent(0.5))
+            tentativePitchDataSet.mode = .horizontalBezier
+            dataSets.append(tentativePitchDataSet)
         }
 
         for formantDataSegments in formantsDataSegments {

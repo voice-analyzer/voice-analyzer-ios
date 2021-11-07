@@ -11,6 +11,7 @@ pub fn pitch(samples: &[f32], sample_rate: u32, threshold: f32) -> Option<Pitch>
     absolute_threshold(normalized, threshold).map(|(selected_index, (prev_value, selected_value, next_value))| Pitch {
         value:      sample_rate as f32 / parabolic_interpolation(selected_index, prev_value, selected_value, next_value),
         confidence: 1.0 - selected_value,
+        time:       -((samples.len() / 2) as f64 / sample_rate as f64),
     })
 }
 

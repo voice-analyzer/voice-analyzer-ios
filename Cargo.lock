@@ -296,8 +296,8 @@ dependencies = [
 
 [[package]]
 name = "irapt"
-version = "0.1.1"
-source = "git+https://github.com/voice-analyzer/irapt-rs.git#59117da94fa857be262e647317ac0e198e63e365"
+version = "0.2.0"
+source = "git+https://github.com/voice-analyzer/irapt-rs.git#ad903970126a4b101a2210c83ba21fd5d6aec36e"
 dependencies = [
  "itertools",
  "num",

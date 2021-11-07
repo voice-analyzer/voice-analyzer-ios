@@ -65,6 +65,7 @@ struct RecordingPitchChart: View {
     var chartView: some View {
         ChartView(
             analysisFrames: (analysis?.frames ?? []).compactMap(AnalysisFrame.from),
+            tentativeAnalysisFrames: [],
             highlightedFrameIndex: Binding { highlightedFrameIndex } set: {
                 highlightedFrameIndex = $0
                 if let highlightedFrameIndex = highlightedFrameIndex,
