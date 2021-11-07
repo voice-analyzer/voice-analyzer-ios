@@ -10,7 +10,7 @@ struct AppView: View {
     @State private var recordingsEditMode: EditMode = .inactive
     @StateObject private var voiceRecorder = VoiceRecorderModel()
     @StateObject private var voiceRecording = VoiceRecordingModel()
-    @State private var analysisFrames: [AnalysisFrame] = []
+    @StateObject private var analysis: PitchChartAnalysisFrames = PitchChartAnalysisFrames()
     @State private var tentativeAnalysisFrames: [AnalysisFrame] = []
 
     var body: some View {
@@ -33,8 +33,7 @@ struct AppView: View {
             isPresented: $livePitchChartIsPresented,
             voiceRecorder: voiceRecorder,
             voiceRecording: voiceRecording,
-            analysisFrames: $analysisFrames,
-            tentativeAnalysisFrames: $tentativeAnalysisFrames
+            analysis: analysis
         )
             .onAppear {
                 recordingsVisible = true

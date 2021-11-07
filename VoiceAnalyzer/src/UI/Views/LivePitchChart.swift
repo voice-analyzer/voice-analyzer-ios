@@ -6,8 +6,7 @@ struct LivePitchChart: View {
     @Binding var isPresented: Bool
     @ObservedObject var voiceRecorder: VoiceRecorderModel
     @ObservedObject var voiceRecording: VoiceRecordingModel
-    @Binding var analysisFrames: [AnalysisFrame]
-    @Binding var tentativeAnalysisFrames: [AnalysisFrame]
+    @ObservedObject var analysis: PitchChartAnalysisFrames
     @State var limitLines: PitchChartLimitLines = PitchChartLimitLines(lower: nil, upper: nil)
 
     @Environment(\.env) var env: AppEnvironment
@@ -78,8 +77,7 @@ struct LivePitchChart: View {
 
     var chartView: some View {
         ChartView(
-            analysisFrames: analysisFrames,
-            tentativeAnalysisFrames: tentativeAnalysisFrames,
+            analysis: analysis,
             highlightedFrameIndex: $highlightedFrameIndex,
             limitLines: $limitLines,
             editingLimitLines: editingLimitLines
@@ -87,10 +85,9 @@ struct LivePitchChart: View {
             .onReceive(voiceRecording.frames.receive(on: DispatchQueue.main)) { update in
                 switch update {
                 case .append(let frame):
-                    analysisFrames.append(frame.frame)
-                    tentativeAnalysisFrames = frame.tentativeFrames
+                    analysis.append(frame: frame.frame, tentativeFrames: frame.tentativeFrames)
                 case .clear:
-                    analysisFrames.removeAll()
+                    analysis.removeAll()
                 }
             }
     }

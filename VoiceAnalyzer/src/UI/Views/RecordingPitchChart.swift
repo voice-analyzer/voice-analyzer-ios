@@ -8,6 +8,7 @@ struct RecordingPitchChart: View {
     var analysisId: Int64?
 
     @ObservedObject var playback: VoicePlaybackModel
+    @StateObject var analysisFrames = PitchChartAnalysisFrames()
     @State var highlightedFrameIndex: UInt?
     @State var sliderPausedPlayback: Bool = false
     @State var limitLines: PitchChartLimitLines = PitchChartLimitLines(lower: nil, upper: nil)
@@ -55,7 +56,13 @@ struct RecordingPitchChart: View {
             .navigationBarTitle(navigationBarTitle)
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: playback.currentTime) { currentTime in updateHighlightedFrame(currentTime: currentTime) }
-            .onChange(of: analysis?.frames.count) { _ in updateHighlightedFrame() }
+            .onChange(of: analysis?.frames.count) { _ in
+                analysisFrames.replaceAll(
+                    analysisFrames: (analysis?.frames ?? []).compactMap(AnalysisFrame.from),
+                    tentativeAnalysisFrames: []
+                )
+                updateHighlightedFrame()
+            }
             .onChange(of: analysis?.analysis) { analysis in
                 limitLines = PitchChartLimitLines(lower: analysis?.upperLimitLine, upper: analysis?.lowerLimitLine)
             }
@@ -64,8 +71,7 @@ struct RecordingPitchChart: View {
 
     var chartView: some View {
         ChartView(
-            analysisFrames: (analysis?.frames ?? []).compactMap(AnalysisFrame.from),
-            tentativeAnalysisFrames: [],
+            analysis: analysisFrames,
             highlightedFrameIndex: Binding { highlightedFrameIndex } set: {
                 highlightedFrameIndex = $0
                 if let highlightedFrameIndex = highlightedFrameIndex,
