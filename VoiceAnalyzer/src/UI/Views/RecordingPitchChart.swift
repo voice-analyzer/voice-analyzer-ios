@@ -121,8 +121,8 @@ struct RecordingPitchChart: View {
                 } else if playback.isPlaying {
                     playback.pausePlayback(env: env)
                 }
-            } catch {
-                os_log("error toggling recording: %@", error.localizedDescription)
+            } catch let error {
+                os_log("error toggling recording: \(error.localizedDescription)")
             }
         }) {
             Image(systemName: playback.isPlaying || sliderPausedPlayback ? "pause" : "play")

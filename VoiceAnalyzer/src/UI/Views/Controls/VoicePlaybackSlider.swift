@@ -83,8 +83,8 @@ struct VoicePlaybackSliderBar: UIViewRepresentable {
                 self.slider.pausedPlayback = false
                 do {
                     try self.slider.playback.resumePlayback(env: self.slider.env)
-                } catch {
-                    os_log("error resuming playback: %@", error.localizedDescription)
+                } catch let error {
+                    os_log("error resuming playback: \(error.localizedDescription)")
                 }
             }
         }

@@ -38,9 +38,9 @@ public class AudioSession {
             do {
                 try audioSession.setCategory(category)
                 try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-                os_log("activated audio session with category %@", category.rawValue)
+                os_log("activated audio session with category \(category.rawValue)")
             } catch {
-                os_log("error activating audio session with category %@", category.rawValue)
+                os_log("error activating audio session with category \(category.rawValue)")
             }
         } else {
             do {

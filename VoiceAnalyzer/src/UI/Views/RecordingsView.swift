@@ -148,9 +148,9 @@ struct RecordingsView: View {
             switch result {
             case .success(let deleteCount):
                 deleteRecordingFiles(filenames: filenames)
-                os_log("deleted %d recordings", deleteCount)
+                os_log("deleted \(deleteCount) recordings")
             case .failure(let error):
-                os_log("error deleting recordings from database: %@", error.localizedDescription)
+                os_log("error deleting recordings from database: \(error.localizedDescription)")
             }
         }
     }
@@ -159,8 +159,8 @@ struct RecordingsView: View {
             do {
                 let url = try AppFilesystem.appRecordingDirectory().appendingPathComponent(filename)
                 try FileManager.default.removeItem(at: url)
-            } catch {
-                os_log("error deleting recording file: %@", error.localizedDescription)
+            } catch let error {
+                os_log("error deleting recording file: \(error.localizedDescription)")
             }
         }
     }
@@ -223,8 +223,8 @@ private struct RecordingRow: View {
         if let filename = recording.filename {
             do {
                 url = try AppFilesystem.appRecordingDirectory().appendingPathComponent(filename)
-            } catch {
-                os_log("error calculating path for recording file: %@", error.localizedDescription)
+            } catch let error {
+                os_log("error calculating path for recording file: \(error.localizedDescription)")
                 url = nil
             }
         } else {
@@ -346,8 +346,8 @@ private struct RecordingRow: View {
                 guard let filename = recording.filename else { return }
                 do {
                     try playback.togglePlayback(env: env, filename: filename)
-                } catch {
-                    os_log("error playing file %@: %@", filename, error.localizedDescription)
+                } catch let error {
+                    os_log("error playing file \(filename): \(error.localizedDescription)")
                 }
             } label: {
                 ZStack {
@@ -397,7 +397,7 @@ private struct RecordingRow: View {
             case .success(_):
                 os_log("updated recording name")
             case .failure(let error):
-                os_log("error updating recording name in database: %@", error.localizedDescription)
+                os_log("error updating recording name in database: \(error.localizedDescription)")
             }
         }
     }

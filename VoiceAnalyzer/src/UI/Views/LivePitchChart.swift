@@ -66,8 +66,8 @@ struct LivePitchChart: View {
             do {
                 try voiceRecorder.start(env: env, recording: voiceRecording)
                 isRecording = voiceRecorder.isRecording
-            } catch {
-                os_log("error starting recording: %@", error.localizedDescription)
+            } catch let error {
+                os_log("error starting recording: \(error.localizedDescription)")
             }
         }
         .onDisappear {
@@ -134,8 +134,8 @@ struct LivePitchChart: View {
             do {
                 try voiceRecorder.toggle(env: env, recording: voiceRecording)
                 isRecording = voiceRecorder.isRecording
-            } catch {
-                os_log("error toggling recording: %@", error.localizedDescription)
+            } catch let error {
+                os_log("error toggling recording: \(error.localizedDescription)")
             }
         }) {
             Image(systemName: isRecording ? "pause" : "mic")
@@ -160,8 +160,8 @@ struct LivePitchChart: View {
                 )
                 try voiceRecording.save(env: env, metadata: metadata)
                 isPresented = false
-            } catch {
-                os_log("error saving recording: %@", error.localizedDescription)
+            } catch let error {
+                os_log("error saving recording: \(error.localizedDescription)")
             }
             voiceRecorder.stop(env: env)
         }) {

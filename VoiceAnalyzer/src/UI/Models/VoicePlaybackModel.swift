@@ -69,7 +69,7 @@ public class VoicePlaybackModel: ObservableObject {
     public func startPlayback(env: AppEnvironment, filename: String) throws {
         let state = stopPlaybackAndReturnState(env: env)
 
-        os_log("starting playback for: %@", filename)
+        os_log("starting playback for: \(filename)")
 
         let fileUrl = try AppFilesystem.appRecordingDirectory().appendingPathComponent(filename)
         let file = try AVAudioFile(forReading: fileUrl)

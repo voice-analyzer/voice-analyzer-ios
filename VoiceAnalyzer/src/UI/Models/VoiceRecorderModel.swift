@@ -90,7 +90,8 @@ private class AudioPacketProcessor {
         let analyzer = prepareAnalyzer(sampleRate: packet.format.sampleRate, env: env)
 
         if packet.sequenceNumber != nextSequenceNumber {
-            os_log("resetting analyzer due to %d missed packets", packet.sequenceNumber - nextSequenceNumber)
+            let missedPackets = packet.sequenceNumber - nextSequenceNumber
+            os_log("resetting analyzer due to \(missedPackets) missed packets")
             analyzer.reset()
             nextSequenceNumber = packet.sequenceNumber
         }
@@ -115,7 +116,7 @@ private class AudioPacketProcessor {
 
         if sampleRate != analyzerState?.sampleRate {
             if let oldSampleRate = analyzerState?.sampleRate {
-                os_log("sample rate changed from %f to %f", oldSampleRate, sampleRate)
+                os_log("sample rate changed from \(oldSampleRate) to \(sampleRate)")
             }
             analyzerState = nil
         }
@@ -130,24 +131,28 @@ private class AudioPacketProcessor {
 
         if pitchEstimationAlgorithm != analyzerState?.pitchEstimationAlgorithm {
             if let oldPitchEstimationAlgorithm = analyzerState?.pitchEstimationAlgorithm {
-                os_log("pitch estimation algorithm changed from %d to %d",
-                       oldPitchEstimationAlgorithm.rawValue,
-                       pitchEstimationAlgorithm.rawValue)
+                os_log("""
+                    pitch estimation algorithm changed \
+                    from \(oldPitchEstimationAlgorithm.rawValue) \
+                    to \(pitchEstimationAlgorithm.rawValue)
+                    """)
             }
             analyzerState = nil
         }
 
         if formantEstimationAlgorithm != analyzerState?.formantEstimationAlgorithm {
             if let oldFormantEstimationAlgorithm = analyzerState?.formantEstimationAlgorithm {
-                os_log("formant estimation algorithm changed from %d to %d",
-                       oldFormantEstimationAlgorithm.rawValue,
-                       formantEstimationAlgorithm.rawValue)
+                os_log("""
+                    formant estimation algorithm changed \
+                    from \(oldFormantEstimationAlgorithm.rawValue) \
+                    to \(formantEstimationAlgorithm.rawValue)
+                    """)
             }
             analyzerState = nil
         }
 
         let analyzer = analyzerState?.analyzer ?? {
-            os_log("starting analyzer with pitch estimation algorithm %d and sample rate %f", pitchEstimationAlgorithm.rawValue, sampleRate)
+            os_log("starting analyzer with pitch estimation algorithm \(pitchEstimationAlgorithm.rawValue) and sample rate \(sampleRate)")
             return Analyzer(
                 sampleRate: sampleRate,
                 pitchEstimationAlgorithm: pitchEstimationAlgorithm,

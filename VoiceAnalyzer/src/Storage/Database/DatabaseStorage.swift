@@ -48,14 +48,15 @@ private struct GRDBStorage {
         config.prepareDatabase { db in
             db.trace(options: .statement) { logMessage in
                 if DatabaseStorage.logQueries {
-                    os_log("database queried: %s", logMessage.description)
+                    os_log("database queried: \(logMessage.description)")
                 }
             }
         }
         config.busyMode = .callback { retryCount in
             usleep(BUSY_WAIT_INTERVAL)
             if retryCount % BUSY_WAIT_LOG_INTERVAL == 0 {
-                os_log("database busy for %d ms", retryCount * Int(BUSY_WAIT_INTERVAL) * 1000)
+                let busyTime = retryCount * Int(BUSY_WAIT_INTERVAL) * 1000
+                os_log("database busy for \(busyTime)ms")
             }
             return true
         }
@@ -68,12 +69,12 @@ private struct GRDBStorage {
             migrator.registerMigration(migration.migrationId) { db in
                 do {
                     if try !db.tableExists(SkippedMigration.databaseTableName) || SkippedMigration.fetchOne(db, key: migration.migrationId) == nil {
-                        os_log("running database migration %s", migration.migrationId)
+                        os_log("running database migration \(migration.migrationId)")
                         try migration.migrate(db)
                     } else {
-                        os_log("skipping database migration %s", migration.migrationId)
+                        os_log("skipping database migration \(migration.migrationId)")
                     }
-                } catch {
+                } catch let error {
                     fatalError("error in migration \(migration.migrationId): \(error)")
                 }
             }

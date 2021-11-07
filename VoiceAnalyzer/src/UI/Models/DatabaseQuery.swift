@@ -1,7 +1,6 @@
 import Foundation
 import GRDB
 import SwiftUI
-import os
 
 @propertyWrapper
 struct DatabaseQuery<T>: DynamicProperty {

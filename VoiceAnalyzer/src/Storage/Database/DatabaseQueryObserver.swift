@@ -29,7 +29,7 @@ class DatabaseQueryObserver<T>: ObservableObject {
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .failure(let error):
-                    os_log("error querying database: %s", error.localizedDescription)
+                    os_log("error querying database: \(error.localizedDescription)")
                 case .finished:
                     break
                 }

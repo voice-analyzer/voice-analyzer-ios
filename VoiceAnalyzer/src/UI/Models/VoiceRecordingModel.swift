@@ -96,8 +96,8 @@ class VoiceRecordingModel: ObservableObject {
             let formattedDateNow = ISO8601DateFormatter().string(from: dateNow)
             destRecordingFileUrl = try AppFilesystem.appRecordingDirectory().appendingPathComponent("Recording at \(formattedDateNow).wav")
             recordingFileSize = recordingFile.handle.offsetInFile
-        } catch {
-            os_log("error calculating paths for recording file: %@", error.localizedDescription)
+        } catch let error {
+            os_log("error calculating paths for recording file \(error.localizedDescription)")
             return
         }
 
@@ -125,14 +125,14 @@ class VoiceRecordingModel: ObservableObject {
         do {
             recordingFile.handle.seek(toFileOffset: 0)
             try recordingFile.handle.write(contentsOf: waveHeader.encode())
-        } catch {
-            os_log("error writing WAVE header to recording file: %@", error.localizedDescription)
+        } catch let error {
+            os_log("error writing WAVE header to recording file \(error.localizedDescription)")
         }
 
         do {
             try FileManager.default.moveItem(at: liveRecordingFileUrl, to: destRecordingFileUrl)
-        } catch {
-            os_log("error moving recording file: %@", error.localizedDescription)
+        } catch let error {
+            os_log("error moving recording file \(error.localizedDescription)")
         }
 
         try env.databaseStorage.writer().write { [databaseFrames] db in
@@ -144,7 +144,7 @@ class VoiceRecordingModel: ObservableObject {
                 try analysisFrameRecord.insert(db)
             }
         }
-        os_log("saved recording file: %@", destRecordingFileUrl.relativeString)
+        os_log("saved recording file \(destRecordingFileUrl.relativeString)")
     }
 
     func open() {
@@ -166,8 +166,8 @@ class VoiceRecordingModel: ObservableObject {
             try recordingFile.handle.truncate(atOffset: 0)
             try recordingFile.handle.write(contentsOf: Data(count: Int(Self.HEADER_LENGTH)))
             self.recordingFile = recordingFile
-        } catch {
-            os_log("error opening live recording file: %@", error.localizedDescription)
+        } catch let error {
+            os_log("error opening live recording file \(error.localizedDescription)")
         }
     }
 
@@ -181,7 +181,7 @@ class VoiceRecordingModel: ObservableObject {
             if sampleRate != recordingFile.sampleRate {
                 if let oldSampleRate = recordingFile.sampleRate {
                     sampleRateChanged = true
-                    os_log("sample rate for recording changed from %f to %f", oldSampleRate, sampleRate)
+                    os_log("sample rate for recording changed from \(oldSampleRate) to \(sampleRate)")
                 }
                 self.recordingFile?.sampleRate = sampleRate
             }
@@ -190,8 +190,8 @@ class VoiceRecordingModel: ObservableObject {
                 do {
                     try recordingFile.handle.truncate(atOffset: UInt64(Self.HEADER_LENGTH))
                     self.recordingFile?.samples = 0
-                } catch {
-                    os_log("error truncating live recording file: %@", error.localizedDescription)
+                } catch let error {
+                    os_log("error truncating live recording file: \(error.localizedDescription)")
                 }
             }
 
@@ -200,8 +200,8 @@ class VoiceRecordingModel: ObservableObject {
                     try recordingFile.handle.write(contentsOf: Data(buffer))
                 }
                 self.recordingFile?.samples += UInt64(data.count)
-            } catch {
-                os_log("error writing to live recording file: %@", error.localizedDescription)
+            } catch let error {
+                os_log("error writing to live recording file: \(error.localizedDescription)")
             }
         }
     }
