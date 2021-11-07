@@ -13,11 +13,13 @@
         <string>PSGroupSpecifier</string>
       </dict>
       {{~#each licenses}}
+
       <dict>
         <key>FooterText</key>
         <string>Used by:
 {{#each used_by}}{{crate.name}} ({{#if crate.repository}}{{crate.repository}}{{else}}https://crates.io/crates/{{crate.name}}{{/if}})
 {{/each}}
+
 
 {{text~}}
         </string>
