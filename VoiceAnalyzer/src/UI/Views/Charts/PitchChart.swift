@@ -37,9 +37,15 @@ struct PitchChart: UIViewRepresentable {
     private static let PITCH_RANGE = 55.0 ... 880.0
     private static let CONFIDENCE_THRESHOLD: Float = 0.20
 
-    private let pitchDataSegments: [[ChartDataEntry]]
+    private let pitchDataEntryPointers: [DataEntryPointer]
+    private let pitchDataSegments: [[PitchChartPitchDataEntry]]
     private let tentativePitchDataSegments: [[ChartDataEntry]]
     private let formantsDataSegments: [[[ChartDataEntry]]]
+
+    struct DataEntryPointer {
+        let segmentIndex: Int
+        let dataEntryIndex: Int
+    }
 
     init(
         analysisFrames: [AnalysisFrame],
@@ -54,19 +60,40 @@ struct PitchChart: UIViewRepresentable {
 
         let voicedFrames = analysisFrames
             .lazy
-            .filter { frame in frame.pitchConfidence > Self.CONFIDENCE_THRESHOLD }
-            .filter { frame in Self.PITCH_RANGE.contains(Double(frame.pitchFrequency)) }
             .enumerated()
+            .filter { index, frame in frame.pitchConfidence > Self.CONFIDENCE_THRESHOLD }
+            .filter { index, frame in Self.PITCH_RANGE.contains(Double(frame.pitchFrequency)) }
+            .enumerated()
+            .map { index, frame in (index, frame.0, frame.1 ) }
 
+        var pitchDataEntryPointers: [DataEntryPointer] = []
         pitchDataSegments = voicedFrames
-            .compactMap { index, frame in
-                guard let musicalPitch = MusicalPitch(fromHz: Double(frame.pitchFrequency)) else { return nil }
-                return ChartDataEntry(x: Double(index), y: musicalPitch.value)
+            .compactMap { index, analysisFrameIndex, frame in
+                guard let pitch = MusicalPitch(fromHz: Double(frame.pitchFrequency)) else { return nil }
+                return (index, analysisFrameIndex, pitch)
             }
-            .group { a, b in abs(a.y - b.y) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y }
+            .group { (a: (Int, Int, MusicalPitch), b) in abs(a.2.value - b.2.value) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y } mapping: {
+                segmentIndex, dataEntryIndex, frame in
+                let (index, analysisFrameIndex, musicalPitch) = frame
+
+                let distance = analysisFrameIndex + 1 - pitchDataEntryPointers.count
+                if distance > 0 {
+                    let prevPointer = pitchDataEntryPointers.last
+                    let nextPointer = DataEntryPointer(segmentIndex: segmentIndex, dataEntryIndex: dataEntryIndex)
+                    for _ in 0..<distance / 2 {
+                        pitchDataEntryPointers.append(prevPointer ?? nextPointer)
+                    }
+                    for _ in distance / 2..<distance {
+                        pitchDataEntryPointers.append(nextPointer)
+                    }
+                }
+
+                return PitchChartPitchDataEntry(index: index, pitch: musicalPitch.value, analysisFrameIndex: analysisFrameIndex)
+            }
+        self.pitchDataEntryPointers = pitchDataEntryPointers
 
         var formantsData: [[ChartDataEntry]] = []
-        for (frameIndex, frame) in voicedFrames {
+        for (frameIndex, _, frame) in voicedFrames {
             let frameFormants = frame.formantFrequencies
             if frameFormants.count > formantsData.count {
                 formantsData.append(contentsOf: Array(repeating: [], count: frameFormants.count - formantsData.count))
@@ -162,6 +189,7 @@ struct PitchChart: UIViewRepresentable {
             tentativePitchDataSet.drawIconsEnabled = false
             tentativePitchDataSet.lineWidth = Self.LINE_WIDTH
             tentativePitchDataSet.setColor(lineColor.withAlphaComponent(0.5))
+            tentativePitchDataSet.highlightEnabled = false
             tentativePitchDataSet.mode = .horizontalBezier
             dataSets.append(tentativePitchDataSet)
         }
@@ -176,6 +204,7 @@ struct PitchChart: UIViewRepresentable {
                 formantDataSet.lineWidth = Self.LINE_WIDTH
                 formantDataSet.lineDashLengths = [5, 5]
                 formantDataSet.setColor(lineColor)
+                formantDataSet.highlightEnabled = false
                 dataSets.append(formantDataSet)
             }
         }
@@ -184,6 +213,7 @@ struct PitchChart: UIViewRepresentable {
             let dummyDataEntries = [ChartDataEntry(x: 1, y: 0)]
             let dummyDataSet = LineChartDataSet(entries: dummyDataEntries)
             dummyDataSet.visible = false
+            dummyDataSet.highlightEnabled = false
             dataSets.append(dummyDataSet)
         }
 
@@ -235,8 +265,15 @@ struct PitchChart: UIViewRepresentable {
     func updateHighlight(chart: UIViewType) {
         if !editingLimitLines,
            let highlightedFrameIndex = highlightedFrameIndex,
-           let pitchDataSegmentIndex = pitchDataSegments.findSegmentIndex(for: Int(highlightedFrameIndex)) {
-            chart.highlightValue(x: Double(highlightedFrameIndex), dataSetIndex: pitchDataSegmentIndex, callDelegate: false)
+           highlightedFrameIndex < pitchDataEntryPointers.count
+        {
+            let pitchDataEntryPointer = pitchDataEntryPointers[Int(highlightedFrameIndex)]
+            let pitchDataEntry = pitchDataSegments[pitchDataEntryPointer.segmentIndex][pitchDataEntryPointer.dataEntryIndex]
+            chart.highlightValue(
+                x: pitchDataEntry.x,
+                dataSetIndex: pitchDataEntryPointer.segmentIndex,
+                callDelegate: false
+            )
         } else {
             chart.highlightValue(nil)
         }
@@ -266,7 +303,9 @@ struct PitchChart: UIViewRepresentable {
         }
 
         func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
-            chart.highlightedFrameIndex = UInt(entry.x)
+            guard let entry = entry as? PitchChartPitchDataEntry else { return }
+            guard let analysisFrameIndex = entry.analysisFrameIndex else { return }
+            chart.highlightedFrameIndex = UInt(analysisFrameIndex)
         }
 
         @objc func panGestureRecognized(_ recognizer: UIPanGestureRecognizer) {
@@ -322,34 +361,43 @@ class HzValueFormatter: IAxisValueFormatter {
     }
 }
 
-extension Sequence where Element: Collection {
-    func findSegmentIndex(for elementIndex: Int) -> Int? {
-        var runningLength = 0
-        for (segmentIndex, segment) in self.enumerated() {
-            runningLength += segment.count
-            if elementIndex < runningLength {
-                return segmentIndex
-            }
-        }
-        return nil
-    }
-}
-
 extension Sequence {
     func group(by shouldGroupTogether: (_ prev: Element, _ next: Element) -> Bool) -> [[Element]] {
+        group(by: shouldGroupTogether, mapping: { _, _, element in element })
+    }
+    func group<OutputElement>(
+        by shouldGroupTogether: (_ prev: Element, _ next: Element) -> Bool,
+        mapping: (_ groupIndex: Int, _ groupElementIndex: Int, _ element: Element) -> OutputElement
+    ) -> [[OutputElement]] {
         var iter = makeIterator()
-        var groups: [[Element]] = []
-        var nextGroup: [Element] = []
+        var groups: [[OutputElement]] = []
+        var nextGroup: [OutputElement] = []
+        var prev: Element?
         while let next = iter.next() {
-            if let prev = nextGroup.last, !shouldGroupTogether(prev, next) {
+            if let prev = prev, !shouldGroupTogether(prev, next) {
                 groups.append(nextGroup)
                 nextGroup = []
             }
-            nextGroup.append(next)
+            prev = next
+            nextGroup.append(mapping(groups.count, nextGroup.count, next))
         }
         if !nextGroup.isEmpty {
             groups.append(nextGroup)
         }
         return groups
+    }
+}
+
+private class PitchChartPitchDataEntry: ChartDataEntry {
+    let analysisFrameIndex: Int?
+
+    required init() {
+        analysisFrameIndex = nil
+        super.init()
+    }
+
+    init(index: Int, pitch: Double, analysisFrameIndex: Int) {
+        self.analysisFrameIndex = analysisFrameIndex
+        super.init(x: Double(index), y: pitch)
     }
 }
