@@ -137,7 +137,7 @@ $(resdir)/Settings.bundle/SwiftAcknowledgements.latest_result.txt: VoiceAnalyzer
 rust-acknowledgements: $(resdir)/Settings.bundle/RustAcknowledgements.plist
 
 $(resdir)/Settings.bundle/RustAcknowledgements.plist: $(resdir)/RustAcknowledgements.plist.hbs Cargo.lock
-	$(CARGO) install cargo-about
+	which cargo-about >/dev/null 2>/dev/null || $(CARGO) install cargo-about
 	$(CARGO) about generate $< > $@
 
 .PHONY: rust-build-all
