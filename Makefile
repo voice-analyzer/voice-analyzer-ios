@@ -105,6 +105,7 @@ help:
 	@echo "Targets:"
 	@echo "  acknowledgements       -- compile all copyright acknowledgements"
 	@echo "  rust-acknowledgements  -- compile rust crate copyright acknowledgements with cargo-about"
+	@echo "  swift-acknowledgements -- compile swift library copyright acknowledgements with license-plist"
 	@echo
 	@echo "Targets to build all supported rust targets ($(subst $(SP),$(COMMA) ,$(RUST_ALL_TARGETS)))"
 	@echo "  rust-build-all         -- build rust debug and release libraries for all targets"
@@ -130,15 +131,27 @@ acknowledgements: rust-acknowledgements swift-acknowledgements
 swift-acknowledgements: $(resdir)/Settings.bundle/SwiftAcknowledgements.latest_result.txt
 
 $(resdir)/Settings.bundle/SwiftAcknowledgements.latest_result.txt: VoiceAnalyzer.xcworkspace/xcshareddata/swiftpm/Package.resolved
-	if ! which $(LICENSE_PLIST) >/dev/null; then echo "Please run brew install mono0926/license-plist/license-plist"; exit 1; fi
-	$(LICENSE_PLIST) --output-path $(dir $@) --prefix $(patsubst %.latest_result.txt,%,$(notdir $@)) --single-page
+	if [ "`shasum $^`" != "`cat $(resdir)/SwiftAcknowledgements.inputs.shasum`" ]; then \
+		if ! which $(LICENSE_PLIST) >/dev/null; then echo "Please run brew install mono0926/license-plist/license-plist"; exit 1; fi; \
+		$(LICENSE_PLIST) --output-path $(dir $@) --prefix $(patsubst %.latest_result.txt,%,$(notdir $@)) --single-page; \
+		shasum $^ > $(resdir)/SwiftAcknowledgements.inputs.shasum; \
+	else \
+		echo "Skipping generating Swift acknowledgements; already up to date."; \
+		touch $@; \
+	fi
 
 .PHONY: rust-acknowledgements
 rust-acknowledgements: $(resdir)/Settings.bundle/RustAcknowledgements.plist
 
 $(resdir)/Settings.bundle/RustAcknowledgements.plist: $(resdir)/RustAcknowledgements.plist.hbs Cargo.lock
-	which cargo-about >/dev/null 2>/dev/null || $(CARGO) install cargo-about
-	$(CARGO) about generate $< > $@
+	if [ "`shasum $^`" != "`cat $(resdir)/RustAcknowledgements.inputs.shasum`" ]; then \
+		which cargo-about >/dev/null 2>/dev/null || $(CARGO) install cargo-about; \
+		$(CARGO) about generate $< > $@; \
+		shasum $^ > $(resdir)/RustAcknowledgements.inputs.shasum; \
+	else \
+		echo "Skipping generating Rust acknowledgements; already up to date."; \
+		touch $@; \
+	fi
 
 .PHONY: rust-build-all
 rust-build-all: rust-build-debug-all rust-build-release-all
