@@ -1,3 +1,0 @@
-[submodule "Pods"]
-	path = Pods
-	url = https://github.com/voice-analyzer/voice-analyzer-ios-pods.git
