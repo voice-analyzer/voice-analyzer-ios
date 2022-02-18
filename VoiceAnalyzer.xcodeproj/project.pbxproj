@@ -488,8 +488,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "target/aarch64-apple-ios/release";
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=x86_64]" = "target/x86_64-apple-ios/release";
-				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=x86_64]" = "target/x86_64-apple-ios/release";
 				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=arm64]" = "target/aarch64-apple-ios-sim/release";
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=x86_64]" = "target/x86_64-apple-ios/release";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -594,8 +594,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "target/aarch64-apple-ios/debug";
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=x86_64]" = "target/x86_64-apple-ios/debug";
-				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=x86_64]" = "target/x86_64-apple-ios/debug";
 				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=arm64]" = "target/aarch64-apple-ios-sim/debug";
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=x86_64]" = "target/x86_64-apple-ios/debug";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -668,8 +668,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "target/aarch64-apple-ios/release";
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=x86_64]" = "target/x86_64-apple-ios/release";
-				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=x86_64]" = "target/x86_64-apple-ios/release";
 				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=arm64]" = "target/aarch64-apple-ios-sim/release";
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*][arch=x86_64]" = "target/x86_64-apple-ios/release";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
