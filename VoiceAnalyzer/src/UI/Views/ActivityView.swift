@@ -63,9 +63,9 @@ struct ActivityView: UIViewControllerRepresentable {
 class Activity: UIActivity {
     let title: String
     let image: UIImage?
-    let action: () -> ()
+    let action: () -> Void
 
-    init(title: String, image: UIImage?, action: @escaping () -> ()) {
+    init(title: String, image: UIImage?, action: @escaping () -> Void) {
         self.title = title
         self.image = image
         self.action = action

@@ -1,7 +1,7 @@
-import os
 import Foundation
 import GRDB
 import SwiftUI
+import os
 
 struct RecordingPitchChart: View {
     var recordingId: Int64
@@ -72,11 +72,13 @@ struct RecordingPitchChart: View {
     var chartView: some View {
         ChartView(
             analysis: analysisFrames,
-            highlightedFrameIndex: Binding { highlightedFrameIndex } set: {
+            highlightedFrameIndex: Binding {
+                highlightedFrameIndex
+            } set: {
                 highlightedFrameIndex = $0
                 if let highlightedFrameIndex = highlightedFrameIndex,
-                   let frames = analysis?.frames,
-                   highlightedFrameIndex < frames.count
+                    let frames = analysis?.frames,
+                    highlightedFrameIndex < frames.count
                 {
                     playback.pausePlayback(env: env)
                     playback.currentTime = frames[Int(highlightedFrameIndex)].time
@@ -109,11 +111,15 @@ struct RecordingPitchChart: View {
 
     var mediaButtons: some View {
         HStack(spacing: 40) {
-            Button { seek(by: -15) } label: {
+            Button {
+                seek(by: -15)
+            } label: {
                 Image(systemName: "gobackward.15")
             }
             playButton
-            Button { seek(by: 15) } label: {
+            Button {
+                seek(by: 15)
+            } label: {
                 Image(systemName: "goforward.15")
             }
         }

@@ -1,5 +1,5 @@
-import SwiftUI
 import Charts
+import SwiftUI
 
 @main
 struct VoiceAnalyzerApp: App {

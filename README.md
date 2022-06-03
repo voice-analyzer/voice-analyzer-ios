@@ -33,6 +33,15 @@ In the Project Settings Editor, select the VoiceAnalyzer target, navigate to the
 
 Then build and run the app.
 
+## Contributing
+
+Please format source code for the repo with the [`bin/format`](bin/format) script before [submitting a PR](https://github.com/voice-analyzer/voice-analyzer-ios/pulls/new). This requires the [`swift-format`](https://github.com/apple/swift-format) tool, which can be installed on MacOS with [`homebrew`](https://brew.sh/):
+
+```
+$ brew install swift-format
+$ bin/format
+```
+
 ## License
 
 Licensed under [MIT](https://opensource.org/licenses/MIT).

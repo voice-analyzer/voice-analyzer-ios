@@ -1,5 +1,5 @@
-import SwiftUI
 import Charts
+import SwiftUI
 
 struct PitchChartLimitLines: Equatable {
     let lower: Double?
@@ -27,7 +27,7 @@ struct PitchChartLimitLines: Equatable {
 class PitchChartAnalysisFrames: ObservableObject {
     private static let MAX_LINE_SEGMENT_JUMP_IN_Y = 0.75
 
-    fileprivate var pitchRange = 55.0 ... 880.0
+    fileprivate var pitchRange = 55.0...880.0
     fileprivate var confidenceThreshold: Float = 0.20
 
     @Published fileprivate var pitchDataEntryPointers: [DataEntryPointer] = []
@@ -37,8 +37,7 @@ class PitchChartAnalysisFrames: ObservableObject {
     @Published fileprivate var clearCount = 0
 
     func replaceAll<Frames: Collection, TentativeFrames: Collection>(analysisFrames: Frames, tentativeAnalysisFrames: TentativeFrames)
-    where Frames.Element == AnalysisFrame, TentativeFrames.Element == AnalysisFrame
-    {
+    where Frames.Element == AnalysisFrame, TentativeFrames.Element == AnalysisFrame {
         let confidenceThreshold = self.confidenceThreshold
         let pitchRange = self.pitchRange
 
@@ -48,15 +47,18 @@ class PitchChartAnalysisFrames: ObservableObject {
             .filter { index, frame in frame.pitchConfidence > confidenceThreshold }
             .filter { index, frame in pitchRange.contains(Double(frame.pitchFrequency)) }
             .enumerated()
-            .map { index, frame in (index, frame.0, frame.1 ) }
+            .map { index, frame in (index, frame.0, frame.1) }
 
         var pitchDataEntryPointers: [DataEntryPointer] = []
-        pitchDataSegments = voicedFrames
+        pitchDataSegments =
+            voicedFrames
             .compactMap { index, analysisFrameIndex, frame in
                 guard let pitch = MusicalPitch(fromHz: Double(frame.pitchFrequency)) else { return nil }
                 return (index, analysisFrameIndex, pitch)
             }
-            .group { (a: (Int, Int, MusicalPitch), b) in abs(a.2.value - b.2.value) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y } mapping: {
+            .group { (a: (Int, Int, MusicalPitch), b) in
+                abs(a.2.value - b.2.value) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y
+            } mapping: {
                 segmentIndex, dataEntryIndex, frame in
                 let (index, analysisFrameIndex, musicalPitch) = frame
 
@@ -84,14 +86,15 @@ class PitchChartAnalysisFrames: ObservableObject {
             }
             for (formantIndex, formant) in frameFormants.enumerated() {
                 if pitchRange.contains(Double(formant)),
-                   let formantMusicalPitch = MusicalPitch(fromHz: Double(formant))
+                    let formantMusicalPitch = MusicalPitch(fromHz: Double(formant))
                 {
                     formantsData[formantIndex]
                         .append(ChartDataEntry(x: Double(frameIndex), y: formantMusicalPitch.value))
                 }
             }
         }
-        formantsDataSegments = formantsData
+        formantsDataSegments =
+            formantsData
             .map { formantData in formantData.group { a, b in abs(a.y - b.y) <= Self.MAX_LINE_SEGMENT_JUMP_IN_Y } }
 
         setTentative(tentativeAnalysisFrames: tentativeAnalysisFrames)
@@ -112,12 +115,14 @@ class PitchChartAnalysisFrames: ObservableObject {
             }
         if !tentativeAnalysisFrames.isEmpty {
             if let lastPitchDataEntry = lastPitchDataEntry,
-               let firstTentativePitchDataEntry = tentativePitchDataEntries.first,
-               abs(firstTentativePitchDataEntry.y - lastPitchDataEntry.y) < Self.MAX_LINE_SEGMENT_JUMP_IN_Y {
-                tentativePitchData = Array([
-                    AnySequence([lastPitchDataEntry].compactMap { $0 }),
-                    AnySequence(tentativePitchDataEntries)
-                ].joined())
+                let firstTentativePitchDataEntry = tentativePitchDataEntries.first,
+                abs(firstTentativePitchDataEntry.y - lastPitchDataEntry.y) < Self.MAX_LINE_SEGMENT_JUMP_IN_Y
+            {
+                tentativePitchData = Array(
+                    [
+                        AnySequence([lastPitchDataEntry].compactMap { $0 }),
+                        AnySequence(tentativePitchDataEntries),
+                    ].joined())
             } else {
                 tentativePitchData = tentativePitchDataEntries
             }
@@ -127,11 +132,10 @@ class PitchChartAnalysisFrames: ObservableObject {
     }
 
     func append<TentativeFrames: Collection>(frame: AnalysisFrame, tentativeFrames: TentativeFrames)
-    where TentativeFrames.Element == AnalysisFrame
-    {
+    where TentativeFrames.Element == AnalysisFrame {
         if frame.pitchConfidence > confidenceThreshold,
-           pitchRange.contains(Double(frame.pitchFrequency)),
-           let musicalPitch = MusicalPitch(fromHz: Double(frame.pitchFrequency))
+            pitchRange.contains(Double(frame.pitchFrequency)),
+            let musicalPitch = MusicalPitch(fromHz: Double(frame.pitchFrequency))
         {
             let index = (pitchDataSegments.last?.last?.x).map { x in Int(x) + 1 } ?? 0
 
@@ -143,7 +147,8 @@ class PitchChartAnalysisFrames: ObservableObject {
             let segmentDataEntryIndex = pitchDataSegments[segmentIndex].count
 
             pitchDataEntryPointers.append(DataEntryPointer(segmentIndex: segmentIndex, dataEntryIndex: segmentDataEntryIndex))
-            pitchDataSegments[segmentIndex].append(PitchChartPitchDataEntry(index: index, pitch: musicalPitch.value, analysisFrameIndex: analysisFrameIndex))
+            pitchDataSegments[segmentIndex].append(
+                PitchChartPitchDataEntry(index: index, pitch: musicalPitch.value, analysisFrameIndex: analysisFrameIndex))
 
             let frameFormants = frame.formantFrequencies
             if frameFormants.count > formantsDataSegments.count {
@@ -152,17 +157,19 @@ class PitchChartAnalysisFrames: ObservableObject {
 
             for (formantIndex, formant) in frameFormants.enumerated() {
                 if pitchRange.contains(Double(formant)),
-                   let formantMusicalPitch = MusicalPitch(fromHz: Double(formant))
+                    let formantMusicalPitch = MusicalPitch(fromHz: Double(formant))
                 {
-                    if formantsDataSegments[formantIndex].isEmpty ||
-                        abs(formantMusicalPitch.value - formantsDataSegments[formantIndex].last!.last!.y) > Self.MAX_LINE_SEGMENT_JUMP_IN_Y
+                    if formantsDataSegments[formantIndex].isEmpty
+                        || abs(formantMusicalPitch.value - formantsDataSegments[formantIndex].last!.last!.y)
+                            > Self.MAX_LINE_SEGMENT_JUMP_IN_Y
                     {
                         formantsDataSegments[formantIndex].append([])
                     }
                     let formantSegmentIndex = formantsDataSegments[formantIndex].count - 1
-                    formantsDataSegments[formantIndex][formantSegmentIndex].append(ChartDataEntry(
-                        x: Double(index),
-                        y: formantMusicalPitch.value)
+                    formantsDataSegments[formantIndex][formantSegmentIndex].append(
+                        ChartDataEntry(
+                            x: Double(index),
+                            y: formantMusicalPitch.value)
                     )
                 }
             }
@@ -353,21 +360,23 @@ struct PitchChart: UIViewRepresentable {
         chart.leftAxis.removeAllLimitLines()
 
         if let lowerLimitLine = limitLines.lower,
-           let lowerLimitLinePitch = MusicalPitch(fromHz: lowerLimitLine)
+            let lowerLimitLinePitch = MusicalPitch(fromHz: lowerLimitLine)
         {
-            chart.leftAxis.addLimitLine(ChartLimitLine(
-                limit: lowerLimitLinePitch.value,
-                label: lowerLimitLinePitch.closestNote().description()
-            ))
+            chart.leftAxis.addLimitLine(
+                ChartLimitLine(
+                    limit: lowerLimitLinePitch.value,
+                    label: lowerLimitLinePitch.closestNote().description()
+                ))
         }
 
         if let upperLimitLine = limitLines.upper,
-           let upperLimitLinePitch = MusicalPitch(fromHz: upperLimitLine)
+            let upperLimitLinePitch = MusicalPitch(fromHz: upperLimitLine)
         {
-            chart.leftAxis.addLimitLine(ChartLimitLine(
-                limit: upperLimitLinePitch.value,
-                label: upperLimitLinePitch.closestNote().description()
-            ))
+            chart.leftAxis.addLimitLine(
+                ChartLimitLine(
+                    limit: upperLimitLinePitch.value,
+                    label: upperLimitLinePitch.closestNote().description()
+                ))
         }
 
         for limitLine in chart.leftAxis.limitLines {
@@ -393,8 +402,8 @@ struct PitchChart: UIViewRepresentable {
 
     func updateHighlight(chart: UIViewType) {
         if !editingLimitLines,
-           let highlightedFrameIndex = highlightedFrameIndex,
-           highlightedFrameIndex < analysis.pitchDataEntryPointers.count
+            let highlightedFrameIndex = highlightedFrameIndex,
+            highlightedFrameIndex < analysis.pitchDataEntryPointers.count
         {
             let pitchDataEntryPointer = analysis.pitchDataEntryPointers[Int(highlightedFrameIndex)]
             let pitchDataEntry = analysis.pitchDataSegments[pitchDataEntryPointer.segmentIndex][pitchDataEntryPointer.dataEntryIndex]
@@ -449,11 +458,10 @@ struct PitchChart: UIViewRepresentable {
                 let translateY = recognizer.translation(in: uiChart).y
                 let gestureStartY = gestureY - translateY
                 if let upperLimitLine = chart.limitLines.upper,
-                   chart.checkLimitLineTouched(chart: uiChart, gestureY: gestureStartY, limitLine: upperLimitLine)
+                    chart.checkLimitLineTouched(chart: uiChart, gestureY: gestureStartY, limitLine: upperLimitLine)
                 {
                     limitLineDragState = .upper
-                } else if
-                    let lowerLimitLine = chart.limitLines.lower,
+                } else if let lowerLimitLine = chart.limitLines.lower,
                     chart.checkLimitLineTouched(chart: uiChart, gestureY: gestureStartY, limitLine: lowerLimitLine)
                 {
                     limitLineDragState = .lower

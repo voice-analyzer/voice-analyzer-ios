@@ -1,0 +1,2 @@
+# Ignore the FFI directory, which is generated code
+swift-format -ir `find VoiceAnalyzer/src -depth 1 -not -name FFI`

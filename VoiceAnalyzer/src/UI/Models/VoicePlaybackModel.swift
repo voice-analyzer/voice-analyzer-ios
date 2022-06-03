@@ -50,11 +50,9 @@ public class VoicePlaybackModel: ObservableObject {
     }
 
     var isPlaying: Bool {
-        get {
-            switch playbackState {
-            case .started(let state): return state.playerNode.isPlaying
-            case .paused(_), .stopped(_): return false
-            }
+        switch playbackState {
+        case .started(let state): return state.playerNode.isPlaying
+        case .paused(_), .stopped(_): return false
         }
     }
 
@@ -205,7 +203,8 @@ public class VoicePlaybackModel: ObservableObject {
         }
 
         let playerFinishedSubject = PassthroughSubject<Void, Never>()
-        state.playerFinishedCancellable = playerFinishedSubject
+        state.playerFinishedCancellable =
+            playerFinishedSubject
             .receive(on: DispatchQueue.main)
             .sink {
                 [weak self] in

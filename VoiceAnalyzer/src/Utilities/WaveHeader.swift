@@ -19,7 +19,7 @@ public struct WaveHeader {
 
         var data = Data(capacity: Int(headerLength))
         data.append(contentsOf: "RIFF".utf8)
-        
+
         data.appendLittleEndian(dataLength + UInt32(headerLength) - 8)
         data.append(contentsOf: "WAVE".utf8)
 
@@ -79,8 +79,8 @@ public struct WaveHeader {
     }
 }
 
-private extension Data {
-    mutating func appendLittleEndian<T: FixedWidthInteger>(_ value: T) {
+extension Data {
+    fileprivate mutating func appendLittleEndian<T: FixedWidthInteger>(_ value: T) {
         var value = value.littleEndian
         Swift.withUnsafeBytes(of: &value) { valueBytes in
             append(contentsOf: valueBytes)

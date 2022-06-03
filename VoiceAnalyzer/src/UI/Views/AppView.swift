@@ -35,9 +35,9 @@ struct AppView: View {
             voiceRecording: voiceRecording,
             analysis: analysis
         )
-            .onAppear {
-                recordingsVisible = true
-            }
+        .onAppear {
+            recordingsVisible = true
+        }
     }
 
     var recordingsView: some View {

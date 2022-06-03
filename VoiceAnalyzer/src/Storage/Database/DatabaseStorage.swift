@@ -68,7 +68,9 @@ private struct GRDBStorage {
         for migration in GRDBMigration.allCases {
             migrator.registerMigration(migration.migrationId) { db in
                 do {
-                    if try !db.tableExists(SkippedMigration.databaseTableName) || SkippedMigration.fetchOne(db, key: migration.migrationId) == nil {
+                    if try !db.tableExists(SkippedMigration.databaseTableName)
+                        || SkippedMigration.fetchOne(db, key: migration.migrationId) == nil
+                    {
                         os_log("running database migration \(migration.migrationId)")
                         try migration.migrate(db)
                     } else {

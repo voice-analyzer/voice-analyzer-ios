@@ -1,7 +1,7 @@
-import os
 import Combine
 import Foundation
 import GRDB
+import os
 
 class DatabaseQueryObserver<T>: ObservableObject {
     var query: (Database) throws -> T {
@@ -23,20 +23,23 @@ class DatabaseQueryObserver<T>: ObservableObject {
     func observe(db: DatabaseReader) {
         if let _ = cancellable { return }
         self.db = db
-        cancellable = ValueObservation
+        cancellable =
+            ValueObservation
             .tracking(query)
             .publisher(in: db)
-            .sink(receiveCompletion: { completion in
-                switch completion {
-                case .failure(let error):
-                    os_log("error querying database: \(error.localizedDescription)")
-                case .finished:
-                    break
-                }
-            }, receiveValue: { [weak self] value in
-                guard let self = self else { return }
-                self.objectWillChange.send()
-                self.value = value
-            })
+            .sink(
+                receiveCompletion: { completion in
+                    switch completion {
+                    case .failure(let error):
+                        os_log("error querying database: \(error.localizedDescription)")
+                    case .finished:
+                        break
+                    }
+                },
+                receiveValue: { [weak self] value in
+                    guard let self = self else { return }
+                    self.objectWillChange.send()
+                    self.value = value
+                })
     }
 }

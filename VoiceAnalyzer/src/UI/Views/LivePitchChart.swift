@@ -1,6 +1,6 @@
-import os
 import Foundation
 import SwiftUI
+import os
 
 struct LivePitchChart: View {
     @Binding var isPresented: Bool
@@ -82,14 +82,14 @@ struct LivePitchChart: View {
             limitLines: $limitLines,
             editingLimitLines: editingLimitLines
         )
-            .onReceive(voiceRecording.frames.receive(on: DispatchQueue.main)) { update in
-                switch update {
-                case .append(let frame):
-                    analysis.append(frame: frame.frame, tentativeFrames: frame.tentativeFrames)
-                case .clear:
-                    analysis.removeAll()
-                }
+        .onReceive(voiceRecording.frames.receive(on: DispatchQueue.main)) { update in
+            switch update {
+            case .append(let frame):
+                analysis.append(frame: frame.frame, tentativeFrames: frame.tentativeFrames)
+            case .clear:
+                analysis.removeAll()
             }
+        }
     }
 
     var toolbarView: some View {

@@ -23,9 +23,9 @@ struct RecordingsView: View {
     var recordingsList: some View {
         List(selection: $selectedRecordingIndices) {
             ForEach(Array(recordings.enumerated()), id: \.1.unwrappedId) { (index, recording) in
-                let expanded: RecordingRow.ExpansionState = recording.id == expandedRecordingId ?
-                    .expanded(RecordingRow.ExpandedState(pitchChartActive: $pitchChartActive)) :
-                    .collapsed
+                let expanded: RecordingRow.ExpansionState =
+                    recording.id == expandedRecordingId
+                    ? .expanded(RecordingRow.ExpandedState(pitchChartActive: $pitchChartActive)) : .collapsed
                 RecordingRow(
                     recording: recording,
                     expanded: expanded,
@@ -33,17 +33,17 @@ struct RecordingsView: View {
                     shareSheetActivityItems: $shareSheetActivityItems,
                     shareSheetPresented: $shareSheetPresented
                 )
-                    .tag(index)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        if case .collapsed = expanded {
-                            switch editMode?.wrappedValue {
-                            case .some(.inactive), .none:
-                                expandedRecordingId = recording.id
-                            default: break
-                            }
+                .tag(index)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if case .collapsed = expanded {
+                        switch editMode?.wrappedValue {
+                        case .some(.inactive), .none:
+                            expandedRecordingId = recording.id
+                        default: break
                         }
                     }
+                }
             }
             .onDelete { indices in
                 deleteRecordings(at: indices)
@@ -96,7 +96,7 @@ struct RecordingsView: View {
                     if let expandedRecordingId = expandedRecordingId {
                         deleteRecording(id: expandedRecordingId)
                     }
-                }
+                },
             ],
             isPresented: $shareSheetPresented
         )
@@ -246,7 +246,8 @@ private struct RecordingRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack {
-                TextField(initialName, text: $name) { _ in } onCommit: {
+                TextField(initialName, text: $name) { _ in
+                } onCommit: {
                     if !name.isEmpty && name != initialName {
                         commitName()
                     } else {
@@ -338,7 +339,9 @@ private struct RecordingRow: View {
 
     var mediaButtons: some View {
         HStack(spacing: 40) {
-            Button { seek(by: -Float(seekAmount)) } label: {
+            Button {
+                seek(by: -Float(seekAmount))
+            } label: {
                 Image(systemName: "gobackward.\(seekAmount)")
             }
             .imageScale(.medium)
@@ -361,7 +364,9 @@ private struct RecordingRow: View {
                 }
             }
             .imageScale(.large)
-            Button { seek(by: Float(seekAmount)) } label: {
+            Button {
+                seek(by: Float(seekAmount))
+            } label: {
                 Image(systemName: "goforward.\(seekAmount)")
             }
             .imageScale(.medium)

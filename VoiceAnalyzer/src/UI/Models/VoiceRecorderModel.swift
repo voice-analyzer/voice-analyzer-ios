@@ -14,7 +14,7 @@ class VoiceRecorderModel: ObservableObject {
     private var processorQueue = DispatchQueue(label: "VoiceRecorderModel.processorQueue", qos: .userInitiated)
 
     var isRecording: Bool {
-        get { if let _ = recordingState { return true } else { return false } }
+        if let _ = recordingState { return true } else { return false }
     }
 
     func toggle(env: AppEnvironment, recording: VoiceRecordingModel) throws {
@@ -37,7 +37,8 @@ class VoiceRecorderModel: ObservableObject {
 
         let audioPacketProcessor = AudioPacketProcessor()
         let audioPackets = PassthroughSubject<AudioPacket, Never>()
-        let audioPacketsSink = audioPackets
+        let audioPacketsSink =
+            audioPackets
             .buffer(size: 5, prefetch: .byRequest, whenFull: .dropOldest)
             .receive(on: processorQueue)
             .sink { packet in audioPacketProcessor.process(packet: packet, env: env, recording: recording) }
@@ -124,14 +125,15 @@ private class AudioPacketProcessor {
         let pitchEstimationAlgorithm: PitchEstimationAlgorithm
         switch env.preferences.pitchEstimationAlgorithm {
         case .IRAPT: pitchEstimationAlgorithm = PitchEstimationAlgorithm.Irapt
-        case .Yin:   pitchEstimationAlgorithm = PitchEstimationAlgorithm.Yin
+        case .Yin: pitchEstimationAlgorithm = PitchEstimationAlgorithm.Yin
         }
 
         let formantEstimationAlgorithm = env.preferences.formantEstimationEnabled ? FormantEstimationAlgorithm.LibFormants : .None
 
         if pitchEstimationAlgorithm != analyzerState?.pitchEstimationAlgorithm {
             if let oldPitchEstimationAlgorithm = analyzerState?.pitchEstimationAlgorithm {
-                os_log("""
+                os_log(
+                    """
                     pitch estimation algorithm changed \
                     from \(oldPitchEstimationAlgorithm.rawValue) \
                     to \(pitchEstimationAlgorithm.rawValue)
@@ -142,7 +144,8 @@ private class AudioPacketProcessor {
 
         if formantEstimationAlgorithm != analyzerState?.formantEstimationAlgorithm {
             if let oldFormantEstimationAlgorithm = analyzerState?.formantEstimationAlgorithm {
-                os_log("""
+                os_log(
+                    """
                     formant estimation algorithm changed \
                     from \(oldFormantEstimationAlgorithm.rawValue) \
                     to \(formantEstimationAlgorithm.rawValue)
@@ -151,14 +154,17 @@ private class AudioPacketProcessor {
             analyzerState = nil
         }
 
-        let analyzer = analyzerState?.analyzer ?? {
-            os_log("starting analyzer with pitch estimation algorithm \(pitchEstimationAlgorithm.rawValue) and sample rate \(sampleRate)")
-            return Analyzer(
-                sampleRate: sampleRate,
-                pitchEstimationAlgorithm: pitchEstimationAlgorithm,
-                formantEstimationAlgorithm: formantEstimationAlgorithm
-            )
-        }()
+        let analyzer =
+            analyzerState?.analyzer
+            ?? {
+                os_log(
+                    "starting analyzer with pitch estimation algorithm \(pitchEstimationAlgorithm.rawValue) and sample rate \(sampleRate)")
+                return Analyzer(
+                    sampleRate: sampleRate,
+                    pitchEstimationAlgorithm: pitchEstimationAlgorithm,
+                    formantEstimationAlgorithm: formantEstimationAlgorithm
+                )
+            }()
 
         self.analyzerState = AnalyzerState(
             analyzer: analyzer,
