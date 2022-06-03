@@ -1,0 +1,48 @@
+name: test
+on: [push]
+
+defaults:
+  run:
+    shell: bash
+jobs:
+  build:
+    name: build
+    runs-on: macos-12
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: cache cargo output
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - name: rustup target add aarch64-apple-ios
+        run:  rustup target add aarch64-apple-ios
+
+      - name: xcodebuild build
+        run:  xcodebuild build -workspace VoiceAnalyzer.xcworkspace -scheme "Testable Release" -destination "generic/platform=iOS" CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO
+
+  format-check:
+    name: format-check
+    runs-on: macos-12
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: brew install swift-format
+        run:  brew install swift-format
+
+      - name: bin/format
+        run:  bin/format
+
+      - name: check if any files changed
+        run: |
+          modified=`git ls-files -m --exclude-standard`
+          echo "Modified files: $modified"
+          [ "$modified" = "" ]
